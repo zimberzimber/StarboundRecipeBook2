@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace StarboundRecipeBook2.Models
 {
@@ -20,6 +21,7 @@ namespace StarboundRecipeBook2.Models
         public int ItemCategoryId { get; set; }
         public int? ObjectDataId { get; set; }
         public int? ActiveItemDataId { get; set; }
+        public int? ConsumeableDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual Rarity Rarity { get; set; }
@@ -27,8 +29,11 @@ namespace StarboundRecipeBook2.Models
         public virtual ItemCategory ItemCategory { get; set; }
         public virtual ObjectData ObjectData { get; set; }
         public virtual ActiveItemData ActiveItemData { get; set; }
+        public virtual ConsumeableData ConsumeableData { get; set; }
 
         public virtual ICollection<RecipeInput> RecipesUsedIn { get; set; }
         public virtual ICollection<Recipe> RecipesCraftedFrom { get; set; }
+        public virtual ICollection<Relationship_Item_Item> Unlocks { get; set; }
+        public virtual ICollection<Relationship_Item_Item> UnlockedBy { get; set; }
     }
 }

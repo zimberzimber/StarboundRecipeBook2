@@ -19,7 +19,7 @@ namespace WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DatabaseContext>(options =>
-            { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True"); });
+            { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework"); });
 
             services.AddMvc();
         }
@@ -33,12 +33,18 @@ namespace WebApplication1
 
             context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            SeedTestingData(context);
+            //SeedTestingData(context);
 
             context.SaveChanges();
 
+            app.Use(async (ctx, next) =>
+            {
+                await ctx.Response.WriteAsync("1");
+                await next.Invoke();
+            });
+
             app.Run(async (ctx) =>
-            { await ctx.Response.WriteAsync("Hello World!"); });
+            { await ctx.Response.WriteAsync("2"); });
         }
 
         void SeedTestingData(DatabaseContext context)

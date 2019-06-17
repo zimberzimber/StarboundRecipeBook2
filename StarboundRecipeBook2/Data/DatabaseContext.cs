@@ -34,6 +34,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Rarity>().HasKey(r => r.RarityId);
             builder.Entity<ItemType>().HasKey(it => it.ItemTypeId);
             builder.Entity<ItemCategory>().HasKey(ic => ic.ItemCategoryId);
+            builder.Entity<ConsumeableData>().HasKey(cd => cd.ConsumeableDataId);
             builder.Entity<ActiveItemData>().HasKey(aid => aid.ActiveItemDataId);
             builder.Entity<ObjectData>().HasKey(od => od.ObjectDataId);
             builder.Entity<ColonyTag>().HasKey(ct => ct.ColonyTagId);
@@ -43,24 +44,16 @@ namespace StarboundRecipeBook2.Data
 
             builder.Entity<Relationship_ObjectData_ColonyTag>().HasKey(roc => new { roc.ObjectDataId, roc.ColonyTagId });
             builder.Entity<Relationship_Recipe_RecipeGroup>().HasKey(rrr => new { rrr.RecipeId, rrr.RecipeGroupId });
-
-            // Mod relationships
-            {
-                builder.Entity<Mod>() // Mod - AddedItems (M : 1)
-                    .HasMany(mod => mod.AddedItems)
-                    .WithOne()
-                    .HasForeignKey(item => item.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                builder.Entity<Mod>() // Mod - AddedRecipes (M : 1)
-                    .HasMany(mod => mod.AddedRecipes)
-                    .WithOne()
-                    .HasForeignKey(recipe => recipe.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            }
+            builder.Entity<Relationship_Item_Item>().HasKey(rii => new { rii.UnlockingItemId, rii.UnlockedItemId});
 
             // Item Relationships
             {
+                builder.Entity<Item>() // Item - Mod (1 : M)
+                    .HasOne(item => item.SourceMod)
+                    .WithMany(mod => mod.AddedItems)
+                    .HasForeignKey(item => item.SourceModId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 builder.Entity<Item>() // Item - Rarity (1 : M)
                     .HasOne(item => item.Rarity)
                     .WithMany(rarity => rarity.Items)
@@ -92,6 +85,25 @@ namespace StarboundRecipeBook2.Data
                     .HasForeignKey<Item>(item => item.ActiveItemDataId)
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
+
+                builder.Entity<Item>() // Item - ConsumableData (0/1 : 1)
+                    .HasOne(item => item.ConsumeableData)
+                    .WithOne(consumeableData => consumeableData.Item)
+                    .HasForeignKey<Item>(item => item.ActiveItemDataId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
+                    .HasOne(rii => rii.UnlockingItem)
+                    .WithMany(item => item.Unlocks)
+                    .HasForeignKey(rii => rii.UnlockingItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
+                    .HasOne(rii => rii.UnlockedItem)
+                    .WithMany(item => item.UnlockedBy)
+                    .HasForeignKey(rii => rii.UnlockedItemId)
+                    .OnDelete(DeleteBehavior.Restrict);
             }
 
             // ObjectData-ColonyTag M:M Relationship
@@ -111,6 +123,12 @@ namespace StarboundRecipeBook2.Data
 
             // Recipe Relationships
             {
+                builder.Entity<Recipe>() // Recipe - Mod (1 : M)
+                    .HasOne(recipe => recipe.SourceMod)
+                    .WithMany(mod => mod.AddedRecipes)
+                    .HasForeignKey(recipe => recipe.SourceModId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 builder.Entity<Recipe>() // Recipe - RecipeInput (M : 1)
                     .HasMany(recipe => recipe.RecipeInputs)
                     .WithOne(recipeInput => recipeInput.Recipe)

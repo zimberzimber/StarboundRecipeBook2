@@ -5,8 +5,7 @@ namespace StarboundRecipeBook2.Models
 {
     public class Item
     {
-        public int ItemId { get; set; }
-        public string InternalName { get; set; }
+        public string InternalName { get; set; } // PK + FK for external data  such as ObjectData
         public string ShortDescription { get; set; }
         public string Description { get; set; }
         public byte[] Icon { get; set; }
@@ -15,13 +14,11 @@ namespace StarboundRecipeBook2.Models
         public string ExtraData { get; set; }
         public string FilePath { get; set; }
 
+        // FKs
         public int SourceModId { get; set; }
-        public int RarityId { get; set; }
-        public int ItemTypeId { get; set; }
-        public int ItemCategoryId { get; set; }
-        public int? ObjectDataId { get; set; }
-        public int? ActiveItemDataId { get; set; }
-        public int? ConsumeableDataId { get; set; }
+        public string RarityName { get; set; }
+        public string FileExtension { get; set; } // FK for ItemType
+        public string ItemCategoryName { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual Rarity Rarity { get; set; }

@@ -2,11 +2,10 @@
 {
     public class ActiveItemData
     {
-        public int ActiveItemDataId { get; set; }
         public double Level { get; set; }
         public bool TwoHanded { get; set; }
-        public int ItemId { get; set; }
 
+        public string ItemName { get; set; } // PK + FK
         public virtual Item Item { get; set; }
     }
 }

@@ -4,8 +4,7 @@ namespace StarboundRecipeBook2.Models
 {
     public class ColonyTag
     {
-        public int ColonyTagId { get; set; }
-        public string Name { get; set; }
+        public string ColonyTagName { get; set; } // PK
 
         public virtual ICollection<Relationship_ObjectData_ColonyTag> ObjectDatas { get; set; }
     }

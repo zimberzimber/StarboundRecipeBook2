@@ -4,8 +4,7 @@ namespace StarboundRecipeBook2.Models
 {
     public class RecipeGroup
     {
-        public int RecipeGroupdId { get; set; }
-        public string Name { get; set; }
+        public string RecipeGroupName { get; set; } // PK
 
         public virtual ICollection<Relationship_Recipe_RecipeGroup> Recipes { get; set; }
     }

@@ -4,8 +4,7 @@ namespace StarboundRecipeBook2.Models
 {
     public class Rarity
     {
-        public int RarityId { get; set; }
-        public string Name { get; set; }
+        public string RarityName { get; set; } // PK
 
         public virtual ICollection<Item> Items { get; set; }
     }

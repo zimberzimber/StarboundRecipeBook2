@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StarboundRecipeBook2.Data;
-using StarboundRecipeBook2.Models;
+using System.IO;
 
 namespace WebApplication1
 {
@@ -32,35 +26,12 @@ namespace WebApplication1
             app.UseMvcWithDefaultRoute();
 
             context.Database.EnsureDeleted();
-            context.Database.EnsureCreated();
-            //SeedTestingData(context);
+            context.Database.EnsureCreated();   
 
             context.SaveChanges();
 
-            app.Use(async (ctx, next) =>
-            {
-                await ctx.Response.WriteAsync("1");
-                await next.Invoke();
-            });
-
             app.Run(async (ctx) =>
-            { await ctx.Response.WriteAsync("2"); });
-        }
-
-        void SeedTestingData(DatabaseContext context)
-        {
-            var m1 = new Mod
-            {
-                SteamId = 1,
-                InternalName = "TestMod1",
-                Version = "1",
-                LastUpdated = DateTime.Now,
-                AddedItems = new List<Item>(),
-                AddedRecipes = new List<Recipe>(),
-                FriendlyName = "Test Mod 1",
-            };
-
-            context.Mods.Add(m1);
+            { await ctx.Response.WriteAsync("Hi"); });
         }
     }
 }

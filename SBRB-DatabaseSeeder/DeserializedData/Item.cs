@@ -1,10 +1,35 @@
-﻿using System.Collections;
+﻿using Jil;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.Primitives;
+using System.Collections.Generic;
 using System.IO;
+using SBRB_DatabaseSeeder.Workers;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
-    partial class DeserializedItem
+    class DeserializedItem
     {
+        class CompositeIconComponent
+        {
+            public string image { get; set; }
+        }
+
+        class FramesFile
+        {
+            public Framegrid frameGrid { get; set; }
+            public Dictionary<string, string> aliases { get; set; }
+        }
+
+        class Framegrid
+        {
+            public int[] size { get; set; }
+            public int[] dimensions { get; set; }
+            public string[][] names { get; set; }
+        }
+
         public enum ItemType { Generic, Object, Consumeable, ActiveItem };
 
         public string itemName { get; set; }
@@ -20,25 +45,55 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public ItemType itemType { get; set; }
         public string filePath { get; set; }
 
-        public string GetIconPath()
+        public byte[] GenerateIconImage()
         {
-            //if (inventoryIcon is string iconPath)
-            if (inventoryIcon.ToString().Contains("[{")) // Collection of paths
-            {
+            Image<Rgba32> fullImage = new Image<Rgba32>(1, 1);
+            byte[] output;
 
-            }
-            else // Single path
+            try
             {
-                string path = inventoryIcon.ToString().Replace("\"", string.Empty);
-                // Path from root
-                if (path.StartsWith('/'))
-                    return $"{Program.modPath}\\{path.Replace('/', '\\')}";
+                // No defined icon. Usually a generic item whose icon is generated through a builder.
+                if (inventoryIcon == null)
+                    // TO DO
+                    return null;
 
-                // Reletive path
+                // Collection of paths
+                if (inventoryIcon.ToString().Contains("[{")) // Collection of paths
+                {
+                    string[] componentsJSON = inventoryIcon.ToString().Replace("[", "").Replace("]", "").Split(',');
+
+                    for (int i = 0; i < componentsJSON.Length; i++)
+                    {
+                        var component = JSON.Deserialize<CompositeIconComponent>(componentsJSON[i]);
+                        fullImage.AddLayer(component.image, filePath);
+                    }
+                }
+
+                // Single path
                 else
-                    return $"{Path.GetDirectoryName(filePath)}\\{path}";
+                {
+                    string path = inventoryIcon.ToString().Replace("\"", string.Empty);
+                    fullImage.AddLayer(path, filePath);
+                }
+
+                using (MemoryStream mem = new MemoryStream())
+                {
+                    fullImage.SaveAsPng(mem);
+                    mem.Position = 0;
+                    using (BinaryReader bnr = new BinaryReader(mem))
+                    {
+                        output = bnr.ReadBytes((int)mem.Length);
+
+                        using (FileStream fs = new FileStream("test2.png", FileMode.Create))
+                        using (BinaryWriter writer = new BinaryWriter(fs))
+                        { writer.Write(output); }
+                    }
+                }
+
+                return output;
             }
-            return "";
+            finally
+            { fullImage.Dispose(); }
         }
     }
 

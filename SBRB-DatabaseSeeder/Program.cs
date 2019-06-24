@@ -10,7 +10,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         static Mod _mod;
 
         static List<string> _itemFiles = new List<string>();
@@ -27,12 +28,14 @@ namespace SBRB_DatabaseSeeder
         {
             JSON.SetDefaultOptions(Options.ExcludeNulls);
 
+
             DeserializedItem asd = JSON.Deserialize<DeserializedItem>(File.ReadAllText(@"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear\drillspear.activeitem"));
-            string path = asd.GetIconPath();
+            asd.filePath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear";
+            asd.GenerateIconImage();
 
             string metaString;
 
-            if (File.Exists($"{modPath}\\.metadata"))
+            if (File.Exists($"{ modPath}\\.metadata"))
                 metaString = File.ReadAllText($"{modPath}\\.metadata");
             else if (File.Exists($"{modPath}\\_metadata"))
                 metaString = File.ReadAllText($"{modPath}\\_metadata");
@@ -130,22 +133,13 @@ namespace SBRB_DatabaseSeeder
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
                 var dItem = _deserializedItems[i];
-                byte[] iconByteArray;
-
-                using (FileStream fs = new FileStream(dItem.GetIconPath(), FileMode.Open))
-                using (BinaryReader reader = new BinaryReader(fs))
-                { iconByteArray = reader.ReadBytes((int)reader.BaseStream.Length); }
-
-                using (FileStream fs = new FileStream(Path.GetFileNameWithoutExtension(dItem.filePath) + ".png", FileMode.Create))
-                using (BinaryWriter writer = new BinaryWriter(fs))
-                { writer.Write(iconByteArray); }
 
                 Item item = new Item
                 {
                     InternalName = dItem.itemName,
                     ShortDescription = dItem.shortdescription,
                     Description = dItem.shortdescription,
-                    //Icon = iconByteArray,
+                    Icon = dItem.GenerateIconImage(),
                     Price = dItem.price,
                     MaxStack = dItem.maxStack,
                     ExtraData = "",

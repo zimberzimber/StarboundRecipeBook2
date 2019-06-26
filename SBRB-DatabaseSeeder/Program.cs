@@ -6,6 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
+// NOTE:
+// Certain edge cases may be discovered and not resolved yet.
+// Look for them via Ctrl + F 'EDGE CASE' through the entire project
+
+// NOTE:
+// Certain to do's are located where the task needs to done.
+// Look for them via Ctrl + F 'TO DO' through the entire project
+
+// NOTE:
+// There may be scattared work in progress segments I may forget about in the future.
+// Look for them via Ctrl + F 'WIP' through the entire project
+
 namespace SBRB_DatabaseSeeder
 {
     class Program
@@ -27,7 +39,6 @@ namespace SBRB_DatabaseSeeder
         static void Main()
         {
             JSON.SetDefaultOptions(Options.ExcludeNulls);
-
 
             DeserializedItem asd = JSON.Deserialize<DeserializedItem>(File.ReadAllText(@"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear\drillspear.activeitem"));
             asd.filePath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear";

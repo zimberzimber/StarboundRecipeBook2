@@ -1,0 +1,21 @@
+﻿// Test JSON
+{
+	// With comments
+	"itemName": "t",
+	/*
+	multi-line ones as well
+	Maybe more?
+	image...
+	*/
+	"price": 5000,
+	"level": 5,
+	"maxStack": 1000,
+	"rarity": "legendary",
+	"category": "tool",
+	"description": "stuff",
+	"shortdescription": "Thing",
+	"twoHanded": false,
+	// just another comment
+	"inventoryIcon": "fossilbrushultraicon.png"
+}
+// One outside ths JSON scope

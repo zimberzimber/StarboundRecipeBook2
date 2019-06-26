@@ -9,6 +9,9 @@ namespace SBRB_DatabaseSeeder.Workers
         // Multi-line comment regex:		[/]+[*](.*?)[*]+[/]
         const string UNCOMMENT_REGEX_PATTERN = @"([/]+[/](.*?)[\n])|([/]+[*](.*?)[*]+[/])";
 
+        /// <summary>Uncomment the subject JSON string</summary>
+        /// <param name="json">Subject JSON string to uncomment</param>
+        /// <returns>The uncommented JSON string</returns>
         public static string RemoveComments(this string json)
             => Regex.Replace(json, UNCOMMENT_REGEX_PATTERN, "", RegexOptions.Singleline);
     }

@@ -1,33 +1,23 @@
 ﻿using Jil;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
-using System.Collections.Generic;
-using System.IO;
 using SBRB_DatabaseSeeder.Workers;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using System.IO;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
+    /// <summary>
+    /// Class storing deserialized item contents. Including active items, consumeables, and objects.
+    /// </summary>
     class DeserializedItem
     {
+        // TO DO:
+        // 'ImageBuilder's method 'AddLayer' return an enum for error handling. Add the right checks.
+
+        // Nested class for composite icon deserialization.
         class CompositeIconComponent
         {
             public string image { get; set; }
-        }
-
-        class FramesFile
-        {
-            public Framegrid frameGrid { get; set; }
-            public Dictionary<string, string> aliases { get; set; }
-        }
-
-        class Framegrid
-        {
-            public int[] size { get; set; }
-            public int[] dimensions { get; set; }
-            public string[][] names { get; set; }
         }
 
         public enum ItemType { Generic, Object, Consumeable, ActiveItem };
@@ -47,17 +37,27 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
         public byte[] GenerateIconImage()
         {
-            Image<Rgba32> fullImage = new Image<Rgba32>(1, 1);
-            byte[] output;
+            // Create the initial image, with 1x1 marking it as uninitialized.
+            // Because I highly doubt anyone is going to use a smaller image.
 
-            try
+            // EDGE CASE: Someone actually using a 1x1 sized icon
+            // RESULT: The image will have its dimensions set to 1x1 everytime it layers a 1x1 sized component from the composite
+            // I'll be sacrificing virgins to Khorne so he'd earase humanity if someone unironically uses a 1x1 composite image-
+            // Or uses a composite with multiple dimensions where one of them is 1x1
+
+            // EDGE CASE: Composite image consist of images with different sizes.
+            // RESULT: Not going to account for that, as its incorrectly used in SB in the first place.
+
+
+            using (Image<Rgba32> fullImage = new Image<Rgba32>(1, 1))
             {
-                // No defined icon. Usually a generic item whose icon is generated through a builder.
+                // Return null if there's no predefined icon.
+                // Either a generic item who's icon is generated through a builder script, or a faulty item definition.
                 if (inventoryIcon == null)
                     // TO DO
                     return null;
 
-                // Collection of paths
+                // If the image is composite, run 'AddLayer' on each piece.
                 if (inventoryIcon.ToString().Contains("[{")) // Collection of paths
                 {
                     string[] componentsJSON = inventoryIcon.ToString().Replace("[", "").Replace("]", "").Split(',');
@@ -69,31 +69,25 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                     }
                 }
 
-                // Single path
+                // Single image, 'AddLayer' it.
                 else
                 {
                     string path = inventoryIcon.ToString().Replace("\"", string.Empty);
                     fullImage.AddLayer(path, filePath);
                 }
 
+                // Create a memory stream to contain the raw image data.
                 using (MemoryStream mem = new MemoryStream())
                 {
+                    // Convert the image into the memory stream, and reset the memory streams position for reading later.
                     fullImage.SaveAsPng(mem);
                     mem.Position = 0;
+
+                    // Create a binary stream to write the image stored within the memory stream into a byte array, and return the result.
                     using (BinaryReader bnr = new BinaryReader(mem))
-                    {
-                        output = bnr.ReadBytes((int)mem.Length);
-
-                        using (FileStream fs = new FileStream("test2.png", FileMode.Create))
-                        using (BinaryWriter writer = new BinaryWriter(fs))
-                        { writer.Write(output); }
-                    }
+                        return bnr.ReadBytes((int)mem.Length);
                 }
-
-                return output;
             }
-            finally
-            { fullImage.Dispose(); }
         }
     }
 

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StarboundRecipeBook2.Data;
 using System.IO;
@@ -11,10 +10,10 @@ namespace WebApplication1
 {
     public class Startup
     {
-        public void ConfigureServices(IServiceCollection services, IConfiguration config)
+        public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DatabaseContext>(options =>
-            { options.UseSqlServer(config.GetValue<string>("ConnectionString")); });
+            { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework"); });
 
             services.AddMvc();
         }

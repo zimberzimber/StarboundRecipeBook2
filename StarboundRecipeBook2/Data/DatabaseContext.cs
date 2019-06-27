@@ -11,7 +11,7 @@ namespace StarboundRecipeBook2.Data
 
         // Tables
         public virtual DbSet<Mod> Mods { get; set; }
-        public virtual DbSet<Item> Item { get; set; }
+        public virtual DbSet<Item> Items { get; set; }
         public virtual DbSet<Rarity> Rarities { get; set; }
         public virtual DbSet<ItemType> ItemTypes { get; set; }
         public virtual DbSet<ItemCategory> ItemCategories { get; set; }
@@ -23,6 +23,10 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
 
         // Relationships 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework");
+        }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

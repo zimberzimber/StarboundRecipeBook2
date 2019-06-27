@@ -1,6 +1,8 @@
 ﻿using Jil;
+using Microsoft.EntityFrameworkCore;
 using SBRB_DatabaseSeeder.DeserializedData;
 using SBRB_DatabaseSeeder.Workers;
+using StarboundRecipeBook2.Data;
 using StarboundRecipeBook2.Models;
 using System;
 using System.Collections.Generic;
@@ -22,8 +24,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         static Mod _mod;
 
         static List<string> _itemFiles = new List<string>();
@@ -76,6 +78,25 @@ namespace SBRB_DatabaseSeeder
             _deserializedItems.ForEach(i => Console.WriteLine($"{i.itemType.ToString()} - {i.itemName}"));
 
             var z = 5;
+
+
+            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
+            {
+                foreach (var item in _DBitems)
+                {
+                    db.Items.Add(item);
+                }
+
+                var count = db.SaveChanges();
+                Console.WriteLine("{0} records saved to database", count);
+
+                Console.WriteLine();
+                Console.WriteLine("All blogs in database:");
+                foreach (var item in db.Items)
+                {
+                    Console.WriteLine(" - {0}", item.InternalName);
+                }
+            }
         }
 
         static void ScanFiles(string path)

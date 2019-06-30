@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace StarboundRecipeBook2.Models
 {
     public class Item
     {
-        public string InternalName { get; set; } // PK + FK for external data  such as ObjectData
+        public enum Rarities : byte { common, uncommon, rare, epic, legendary, essential }
+        public enum ItemTypes : byte { genericItem, activeItem, consumeableItem, objectItem}
+
+        public int ItemId { get; set; } // PPK
+        public string InternalName { get; set; }
         public string ShortDescription { get; set; }
         public string Description { get; set; }
         public byte[] Icon { get; set; }
@@ -13,17 +16,17 @@ namespace StarboundRecipeBook2.Models
         public int MaxStack { get; set; }
         public string ExtraData { get; set; }
         public string FilePath { get; set; }
+        public Rarities Rarity { get; set; }
+        public ItemTypes Type { get; set; }
+        public string Category { get; set; }
 
         // FKs
-        public int SourceModId { get; set; }
-        public string RarityName { get; set; }
-        public string FileExtension { get; set; } // FK for ItemType
-        public string ItemCategoryName { get; set; }
+        public int SourceModId { get; set; } // PPK + FK
+        public int? ObjectDataId { get; set; }
+        public int? ActiveItemDataId { get; set; }
+        public int? ConsumeableDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
-        public virtual Rarity Rarity { get; set; }
-        public virtual ItemType ItemType { get; set; }
-        public virtual ItemCategory ItemCategory { get; set; }
         public virtual ObjectData ObjectData { get; set; }
         public virtual ActiveItemData ActiveItemData { get; set; }
         public virtual ConsumeableData ConsumeableData { get; set; }

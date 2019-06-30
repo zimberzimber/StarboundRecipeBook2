@@ -7,6 +7,7 @@ using StarboundRecipeBook2.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 // NOTE:
 // Certain edge cases may be discovered and not resolved yet.
@@ -24,8 +25,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         static Mod _mod;
 
         static List<string> _itemFiles = new List<string>();
@@ -41,10 +42,6 @@ namespace SBRB_DatabaseSeeder
         static void Main()
         {
             JSON.SetDefaultOptions(Options.ExcludeNulls);
-
-            DeserializedItem asd = JSON.Deserialize<DeserializedItem>(File.ReadAllText(@"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear\drillspear.activeitem"));
-            asd.filePath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master\items\active\weapons\other\drillspear";
-            asd.GenerateIconImage();
 
             string metaString;
 
@@ -72,31 +69,15 @@ namespace SBRB_DatabaseSeeder
 
             ScanFiles(modPath);
             BuildItemList();
-            ConvertToDBItems();
 
-            Console.WriteLine("\tItems:");
+            Console.WriteLine();
+            Console.WriteLine("\tItems Scanned:");
             _deserializedItems.ForEach(i => Console.WriteLine($"{i.itemType.ToString()} - {i.itemName}"));
+            Console.WriteLine();
 
-            var z = 5;
-
-
-            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
-            {
-                foreach (var item in _DBitems)
-                {
-                    db.Items.Add(item);
-                }
-
-                var count = db.SaveChanges();
-                Console.WriteLine("{0} records saved to database", count);
-
-                Console.WriteLine();
-                Console.WriteLine("All blogs in database:");
-                foreach (var item in db.Items)
-                {
-                    Console.WriteLine(" - {0}", item.InternalName);
-                }
-            }
+            ConvertToDBItems();
+            AddToDatabase();
+            temp();
         }
 
         static void ScanFiles(string path)
@@ -168,6 +149,7 @@ namespace SBRB_DatabaseSeeder
 
                 Item item = new Item
                 {
+                    ItemId = i,
                     InternalName = dItem.itemName,
                     ShortDescription = dItem.shortdescription,
                     Description = dItem.shortdescription,
@@ -176,8 +158,9 @@ namespace SBRB_DatabaseSeeder
                     MaxStack = dItem.maxStack,
                     ExtraData = "",
                     FilePath = dItem.filePath,
-                    FileExtension = Path.GetExtension(dItem.filePath),
-                    RarityName = dItem.rarity,
+                    Type = dItem.filePath.FilePathToItemTypeEnum(),
+                    Category = dItem.category?.ToLower(),
+                    Rarity = (Item.Rarities)Enum.Parse(typeof(Item.Rarities), dItem.rarity.ToLower()),
 
                     SourceModId = _mod.SteamId,
                 };
@@ -187,44 +170,81 @@ namespace SBRB_DatabaseSeeder
                 {
                     var activeItem = new ActiveItemData
                     {
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        ActiveItemDataId = _DBActiveItemDatas.Count,
                         Level = dActiveItem.level,
                         TwoHanded = dActiveItem.twoHanded,
-                        ItemName = dActiveItem.itemName
                     };
 
-                    item.ActiveItemData = activeItem;
-                    activeItem.Item = item;
-
+                    item.ActiveItemDataId = activeItem.ActiveItemDataId;
                     _DBActiveItemDatas.Add(activeItem);
                 }
                 else if (dItem is DeserializedConsumeable dConsumeable)
                 {
                     var consumeableItem = new ConsumeableData
                     {
-                        ItemName = item.InternalName,
-                        FoodValue = dConsumeable.foodValue
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        ConsumeableDataId = _DBConsumeableDatas.Count,
+                        FoodValue = dConsumeable.foodValue,
                     };
 
-                    item.ConsumeableData = consumeableItem;
-                    consumeableItem.Item = item;
-
+                    item.ConsumeableDataId = consumeableItem.ConsumeableDataId;
                     _DBConsumeableDatas.Add(consumeableItem);
                 }
                 else if (dItem is DeserializedObject dObject)
                 {
                     var objectItem = new ObjectData
                     {
-                        ItemName = item.InternalName,
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        ObjectDataId = _DBObjectDatas.Count,
                         Printable = dObject.printable,
                         Race = dObject.race,
-                        ColonyTags = null
+                        ColonyTags = "some tags"
                     };
 
-                    item.ObjectData = objectItem;
-                    objectItem.Item = item;
-
+                    item.ObjectDataId = objectItem.ObjectDataId;
                     _DBObjectDatas.Add(objectItem);
                 }
+            }
+        }
+
+        static void AddToDatabase()
+        {
+            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
+            {
+                db.Database.EnsureDeleted();
+                db.Database.EnsureCreated();
+
+                db.Mods.Add(_mod);
+
+                foreach (var item in _DBitems)
+                { db.Items.Add(item); }
+
+                foreach (var item in _DBActiveItemDatas)
+                { db.ActiveItemDatas.Add(item); }
+
+                foreach (var item in _DBObjectDatas)
+                { db.ObjectDatas.Add(item); }
+
+                foreach (var item in _DBConsumeableDatas)
+                { db.ConsumeableDatas.Add(item); }
+
+                var count = db.SaveChanges();
+                Console.WriteLine("{0} records saved to database", count);
+            }
+        }
+
+        static void temp()
+        {
+            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
+            {
+                List<Mod> mods = db.Mods.Include(m => m.AddedItems).ToList();
+                List<Item> items = db.Items.Include(i => i.ActiveItemData).Include(i => i.ConsumeableData).Include(i => i.ObjectData).ToList();
+                List<Item> items2 = db.Items.Where(r => r.Rarity.ToString() == "common").ToList();
+                var breakpoint = 5;
             }
         }
     }

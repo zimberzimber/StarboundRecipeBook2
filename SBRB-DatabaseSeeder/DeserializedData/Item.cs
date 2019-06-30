@@ -28,7 +28,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string rarity { get; set; }
         public string category { get; set; }
         public int price { get; set; }
-        public int maxStack { get; set; }
+        public int maxStack { get; set; } = 1;
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
 
@@ -46,7 +46,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             // Or uses a composite with multiple dimensions where one of them is 1x1
 
             // EDGE CASE: Composite image consist of images with different sizes.
-            // RESULT: Not going to account for that, as its incorrectly used in SB in the first place.
+            // RESULT: Not going to account for that, as its also incorrect usage in Starbounds case.
 
 
             using (Image<Rgba32> fullImage = new Image<Rgba32>(1, 1))
@@ -75,6 +75,10 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                     string path = inventoryIcon.ToString().Replace("\"", string.Empty);
                     fullImage.AddLayer(path, filePath);
                 }
+
+                // If the dimensions remained 1x1, the image failed to generate, and is empty.
+                if (fullImage.Height == 1 && fullImage.Width == 1)
+                    return null;
 
                 // Create a memory stream to contain the raw image data.
                 using (MemoryStream mem = new MemoryStream())

@@ -4,6 +4,7 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace SBRB_DatabaseSeeder.Workers
@@ -57,7 +58,7 @@ namespace SBRB_DatabaseSeeder.Workers
             else
             {
                 // Same directory
-                imagePath = $"{itemFilePath}\\{imagePath}";
+                imagePath = $"{Path.GetDirectoryName(itemFilePath)}\\{imagePath}";
             }
 
             // Check whether a specific frame is used
@@ -82,12 +83,11 @@ namespace SBRB_DatabaseSeeder.Workers
             if (frame != null)
             {
                 // Look for a file with the same name as the given 'imagePath', but has '.frames' added to it after its original extension
-                string imageFile = Path.GetDirectoryName(imagePath);
-                string framesPath = $"{imageFile}\\{Path.GetFileNameWithoutExtension(imageFile)}.frames";
+                string framesPath = $"{Path.GetDirectoryName(imagePath)}\\{Path.GetFileNameWithoutExtension(imagePath)}.frames";
 
                 // If that doesn't exist, look for a file named 'default.frames' in the same directory
                 if (!File.Exists(framesPath))
-                    framesPath = $"{imageFile}\\default.frames";
+                    framesPath = $"{Path.GetDirectoryName(imagePath)}\\default.frames";
 
                 // Frames file not found - Return false, indicating the addition was unsuccessful.
                 if (!File.Exists(framesPath))
@@ -97,18 +97,18 @@ namespace SBRB_DatabaseSeeder.Workers
                 FramesFile frames = JSON.Deserialize<FramesFile>(File.ReadAllText(framesPath));
 
                 // The frame we're looking for might be an alias. Check if it is, and replace it with the original frame name.
-                if (frames.aliases.ContainsKey(frame))
+                if (frames.aliases != null && frames.aliases.ContainsKey(frame))
                     frame = frames.aliases[frame];
 
                 // Find the frame we're looking for
                 int xIndex = 0;
                 int yIndex = 0;
                 bool found = false;
-                for (; xIndex < frames.frameGrid.names.Length; xIndex++)
+                for (; yIndex < frames.frameGrid.names.Length; yIndex++)
                 {
-                    for (; yIndex < frames.frameGrid.names[xIndex].Length; yIndex++)
+                    for (; xIndex < frames.frameGrid.names[yIndex].Length; xIndex++)
                     {
-                        if (frames.frameGrid.names[xIndex][yIndex] == frame)
+                        if (frames.frameGrid.names[yIndex][xIndex] == frame)
                         {
                             found = true;
                             break;
@@ -123,8 +123,8 @@ namespace SBRB_DatabaseSeeder.Workers
                     return AddLayerResult.FrameNotFound;
 
                 // Setup the correct frame coordinates
-                int xOffset = xIndex * frames.frameGrid.dimensions[0];
-                int yOffset = yIndex * frames.frameGrid.dimensions[1];
+                int xOffset = xIndex * frames.frameGrid.size[0];
+                int yOffset = yIndex * frames.frameGrid.size[1];
 
                 // Load the entire image containing the frames
                 using (Image<Rgba32> img = Image.Load(imagePath))

@@ -25,7 +25,7 @@ namespace WebApplication1
 
             app.UseMvcWithDefaultRoute();
 
-            context.Database.EnsureDeleted();
+            //context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
 
             context.SaveChanges();

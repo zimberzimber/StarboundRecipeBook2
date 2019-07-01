@@ -28,7 +28,7 @@ Come say hi! <br/>
 > **gulp.js 4.0.2** - Compiling SCSS into CSS, and minifying CSS and JavaScript : https://gulpjs.com/
 
 **Why 2?**
-> Because the first recipe book was planned as a mod for Starbound instead of a web app, but there was no implementable way without either dropping extra work on every mod author out there, or endless hours hours on my end.
+> Because the first recipe book was planned as a mod for Starbound instead of a web app, but there was no implementable way without either dropping extra work on every mod author out there, or a lot of compatibility mods.
 
 **Common Queries?**
 > Yes, because most of these aren't questions."

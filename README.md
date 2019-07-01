@@ -20,11 +20,12 @@ Come say hi! <br/>
 **I want my mod off the book.**
 > Message me, and we'll talk about it.
 
-**Whats used in the project?**
-> ASP.NET Core by Microsoft - Handling the web app<br/>
-> Entity Framework Core by Microsoft - Handling the database<br/>
-> JIL by Kevin Montrose - Handling JSON de/serialization : https://github.com/kevin-montrose/Jil<br/>
-> ImageSharp by Six Labors - Handing image conversion : https://sixlabors.com/projects/imagesharp/
+**Tools used in the project?**
+> **ASP.NET Core 2.1.1 by Microsoft** - Handling the web app<br/>
+> **Entity Framework Core 2.2.4 by Microsoft** - Handling the database<br/>
+> **JIL 2.17.0 by Kevin Montrose** - JSON de/serialization : https://github.com/kevin-montrose/Jil<br/>
+> **ImageSharp 1.0.0 by Six Labors** - Working with image files : https://sixlabors.com/projects/imagesharp/<br/>
+> **gulp.js 4.0.2** - Compiling SCSS into CSS, and minifying CSS and JavaScript : https://gulpjs.com/
 
 **Why 2?**
 > Because the first recipe book was planned as a mod for Starbound instead of a web app, but there was no implementable way without either dropping extra work on every mod author out there, or endless hours hours on my end.

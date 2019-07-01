@@ -4,7 +4,7 @@ As a side effect, modders will have to answer the same item-recipe related quest
 
 Come say hi! <br/>
 <a href="https://discord.gg/Egjx962">
-<img src="https://cdn.discordapp.com/attachments/475044061305110528/595054200312823808/discordlogo.png" alt="Discord Link">
+<img src="https://discordapp.com/assets/e4923594e694a21542a489471ecffa50.svg" alt="Discord Link" width="200" height="68">
 </a>
 
 ## Common Queries ##

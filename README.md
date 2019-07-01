@@ -2,6 +2,11 @@
 A project aiming to create a place where users could view all the items and recipes in once concentrated space, serving sort of like a wiki, but just for items.
 As a side effect, modders will have to answer the same item-recipe related questions less.
 
+Come say hi! <br/>
+<a href="https://discord.gg/Egjx962">
+<img src="https://cdn.discordapp.com/attachments/475044061305110528/595054200312823808/discordlogo.png" alt="Discord Link">
+</a>
+
 ## Common Queries ##
 
 **I want a mod added to the list.**

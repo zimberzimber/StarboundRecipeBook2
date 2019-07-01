@@ -7,7 +7,7 @@ As a side effect, modders will have to answer the same item-recipe related quest
 **I want a mod added to the list.**
 > Message me the Steam ID of the subject mod on the Discord server or via Steam, and I'll work on adding it.
 
-**I want an item added by mod hidden.**
+**I want an item added by my mod hidden.**
 > Add the following line to the items you want hidden:<br/>
 > "SBRBhidden" : true<br/>
 > The items entry will not be hidden, but its internal name, unlocks, and involved recipes, will not be displayed.

@@ -31,7 +31,7 @@ Come say hi! <br/>
 > Because the first recipe book was planned as a mod for Starbound instead of a web app, but there was no implementable way without either dropping extra work on every mod author out there, or a lot of compatibility mods.
 
 **Common Queries?**
-> Yes, because most of these aren't questions."
+> Yes, because most of these aren't questions.
 
 ## Features ##
 - [x] **A database containing items (including consumeables, active items, and object), created by reading an extracted mod**

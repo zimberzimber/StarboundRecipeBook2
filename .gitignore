@@ -3,3 +3,4 @@ obj/
 .vs/
 packages
 SBRB-Database
+/StarboundRecipeBook2/node_modules

@@ -1,0 +1,25 @@
+﻿
+.itemDataContainer {
+
+	span {
+		display: inline-block;
+
+		p {
+			display: inline-block;
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	.itemIconContainer {
+		width: 32px;
+		height: 32px;
+		/*-ms-interpolation-mode: nearest-neighbor;*/
+		/*image-rendering: pixelated;*/
+
+		img {
+			width: 100%;
+			height: 100%;
+		}
+	}
+}

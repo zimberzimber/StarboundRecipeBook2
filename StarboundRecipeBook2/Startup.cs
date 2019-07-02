@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using StarboundRecipeBook2.Data;
+using StarboundRecipeBook2.Services;
 using System.IO;
 
 namespace WebApplication1
@@ -15,6 +16,8 @@ namespace WebApplication1
             services.AddDbContext<DatabaseContext>(options =>
             { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework"); });
 
+            services.AddTransient<IItemRepository, ItemRepository>();
+            services.AddTransient<ITextColorResolver, TextColorResolver>();
             services.AddMvc();
         }
 
@@ -23,6 +26,7 @@ namespace WebApplication1
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
 
+            app.UseStaticFiles();
             app.UseMvcWithDefaultRoute();
 
             //context.Database.EnsureDeleted();

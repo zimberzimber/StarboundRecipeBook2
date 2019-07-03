@@ -13,20 +13,12 @@ using System.Linq;
 // Certain edge cases may be discovered and not resolved yet.
 // Look for them via Ctrl + F 'EDGE CASE' through the entire project
 
-// NOTE:
-// Certain to do's are located where the task needs to done.
-// Look for them via Ctrl + F 'TO DO' through the entire project
-
-// NOTE:
-// There may be scattared work in progress segments I may forget about in the future.
-// Look for them via Ctrl + F 'WIP' through the entire project
-
 namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         static Mod _mod;
 
         static List<string> _itemFiles = new List<string>();
@@ -118,19 +110,19 @@ namespace SBRB_DatabaseSeeder
                 {
                     case ".item":
                         item = JSON.Deserialize<DeserializedItem>(json);
-                        item.itemType = DeserializedItem.ItemType.Generic;
+                        item.itemType = DeserializedItem.ItemTypes.Generic;
                         break;
                     case ".object":
                         item = JSON.Deserialize<DeserializedObject>(json);
-                        item.itemType = DeserializedItem.ItemType.Object;
+                        item.itemType = DeserializedItem.ItemTypes.Object;
                         break;
                     case ".consumeable":
                         item = JSON.Deserialize<DeserializedConsumeable>(json);
-                        item.itemType = DeserializedItem.ItemType.Consumeable;
+                        item.itemType = DeserializedItem.ItemTypes.Consumeable;
                         break;
                     case ".activeitem":
                         item = JSON.Deserialize<DeserializedActiveItem>(json);
-                        item.itemType = DeserializedItem.ItemType.ActiveItem;
+                        item.itemType = DeserializedItem.ItemTypes.ActiveItem;
                         break;
                     default:
                         throw new Exception($"Not an item extension file received from '{_deserializedItems[i]}'");
@@ -145,25 +137,29 @@ namespace SBRB_DatabaseSeeder
         {
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
-                var dItem = _deserializedItems[i];
+                DeserializedItem dItem = _deserializedItems[i];
 
                 Item item = new Item
                 {
+                    SourceModId = _mod.SteamId,
                     ItemId = i,
-                    InternalName = dItem.itemName,
                     ShortDescription = dItem.shortdescription,
-                    Description = dItem.shortdescription,
+                    Description = dItem.description,
                     Icon = dItem.GenerateIconImage(),
                     Price = dItem.price,
                     MaxStack = dItem.maxStack,
                     ExtraData = "",
-                    FilePath = dItem.filePath,
                     Type = dItem.filePath.FilePathToItemTypeEnum(),
                     Category = dItem.category?.ToLower(),
                     Rarity = (Item.Rarities)Enum.Parse(typeof(Item.Rarities), dItem.rarity.ToLower()),
-
-                    SourceModId = _mod.SteamId,
                 };
+
+                if (!dItem.SBRBhidden)
+                {
+                    item.InternalName = dItem.itemName;
+                    item.FilePath = dItem.filePath.Split(modPath)[1];
+                }
+
                 _DBitems.Add(item);
 
                 if (dItem is DeserializedActiveItem dActiveItem)

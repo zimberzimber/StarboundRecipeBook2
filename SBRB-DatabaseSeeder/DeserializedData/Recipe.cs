@@ -7,8 +7,6 @@ using System.Text;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
-    // WIP
-
 
     /*static class DeserializedRecipes
     {

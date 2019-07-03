@@ -11,16 +11,13 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     /// </summary>
     class DeserializedItem
     {
-        // TO DO:
-        // 'ImageBuilder's method 'AddLayer' return an enum for error handling. Add the right checks.
-
         // Nested class for composite icon deserialization.
         class CompositeIconComponent
         {
             public string image { get; set; }
         }
 
-        public enum ItemType { Generic, Object, Consumeable, ActiveItem };
+        public enum ItemTypes { Generic, Object, Consumeable, ActiveItem };
 
         public string itemName { get; set; }
         public string shortdescription { get; set; }
@@ -31,8 +28,10 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public int maxStack { get; set; } = 1;
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
+        public bool SBRBhidden { get; set; }
 
-        public ItemType itemType { get; set; }
+
+        public ItemTypes itemType { get; set; }
         public string filePath { get; set; }
 
         public byte[] GenerateIconImage()
@@ -54,7 +53,6 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                 // Return null if there's no predefined icon.
                 // Either a generic item who's icon is generated through a builder script, or a faulty item definition.
                 if (inventoryIcon == null)
-                    // TO DO
                     return null;
 
                 // If the image is composite, run 'AddLayer' on each piece.

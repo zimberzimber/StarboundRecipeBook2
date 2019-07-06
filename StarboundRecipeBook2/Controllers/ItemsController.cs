@@ -5,9 +5,9 @@ namespace StarboundRecipeBook2.Controllers
 {
     public class ItemsController : Controller
     {
-        ItemRepository _itemRepo;
+        IItemRepository _itemRepo;
 
-        public ItemsController(ItemRepository itemRepo)
+        public ItemsController(IItemRepository itemRepo)
         {
             _itemRepo = itemRepo;
         }
@@ -15,6 +15,14 @@ namespace StarboundRecipeBook2.Controllers
         public IActionResult Index()
         {
             return View(_itemRepo.GetAllItems());
+        }
+
+        public IActionResult Item(int modId, int itemId)
+        {
+            var item = _itemRepo.GetItem(itemId, modId);
+            if (item == default)
+                return RedirectToAction("Index", "Home");
+            return View(item);
         }
     }
 }

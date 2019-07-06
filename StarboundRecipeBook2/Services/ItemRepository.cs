@@ -48,7 +48,7 @@ namespace StarboundRecipeBook2.Services
                 .Include(i => i.ActiveItemData)
                 .If(includeMod, i => i.Include(i2 => i2.SourceMod))
                 .If(includeRecipes, i => i.Include(i2 => i2.RecipesUsedIn).Include(i2 => i2.RecipesCraftedFrom))
-                .If(includeUnlocks, i => i.Include(i2 => i2.UnlockedBy).Include(i2 => i2.Unlocks))
+                .If(includeRecipes, i => i.Include(i2 => i2.Unlocks))
                 .Skip(skip)
                 .Take(count);
         }

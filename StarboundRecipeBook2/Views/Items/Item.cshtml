@@ -1,0 +1,11 @@
+﻿
+@{ ViewData["Title"] = "ViewItem"; }
+
+@model Item
+@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
+
+<div class="itemDataContainer">
+	@await Component.InvokeAsync("ItemIcon", Model)
+	@Html.Raw(@ColorResolver.ResolveColor(Model.ShortDescription))
+</div>
+

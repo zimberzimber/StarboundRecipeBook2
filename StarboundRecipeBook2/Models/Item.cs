@@ -33,7 +33,6 @@ namespace StarboundRecipeBook2.Models
 
         public virtual ICollection<RecipeInput> RecipesUsedIn { get; set; }
         public virtual ICollection<Recipe> RecipesCraftedFrom { get; set; }
-        public virtual ICollection<Relationship_Item_Item> Unlocks { get; set; }
-        public virtual ICollection<Relationship_Item_Item> UnlockedBy { get; set; }
+        public virtual ICollection<RecipeUnlock> Unlocks { get; set; }
     }
 }

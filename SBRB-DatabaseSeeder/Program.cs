@@ -17,8 +17,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         static Mod _mod;
 
         static List<string> _itemFiles = new List<string>();
@@ -26,10 +26,13 @@ namespace SBRB_DatabaseSeeder
         static List<DeserializedItem> _deserializedItems = new List<DeserializedItem>();
         static List<DeserializedRecipe> _recipes = new List<DeserializedRecipe>();
 
-        static List<Item> _DBitems = new List<Item>();
+        static List<Item> _DBItems = new List<Item>();
         static List<ObjectData> _DBObjectDatas = new List<ObjectData>();
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
         static List<ConsumeableData> _DBConsumeableDatas = new List<ConsumeableData>();
+        static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
+
+        static List<string> _warningMessages = new List<string>();
 
         static void Main()
         {
@@ -68,7 +71,21 @@ namespace SBRB_DatabaseSeeder
             Console.WriteLine();
 
             ConvertToDBItems();
+
+            Console.WriteLine();
+            if (_warningMessages.Count > 0)
+            {
+                for (int i = 0; i < _warningMessages.Count; i++)
+                { Console.WriteLine(_warningMessages[i]); }
+
+                Console.WriteLine("Warnings present. Press any key to continue...");
+                Console.ReadKey();
+            }
+            else
+                Console.WriteLine("No warnings, proceeding...");
+
             AddToDatabase();
+
             temp();
         }
 
@@ -138,6 +155,7 @@ namespace SBRB_DatabaseSeeder
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
                 DeserializedItem dItem = _deserializedItems[i];
+                Console.WriteLine($"Working on '{dItem.itemName}'...");
 
                 Item item = new Item
                 {
@@ -160,7 +178,7 @@ namespace SBRB_DatabaseSeeder
                     item.FilePath = dItem.filePath.Split(modPath)[1];
                 }
 
-                _DBitems.Add(item);
+                _DBItems.Add(item);
 
                 if (dItem is DeserializedActiveItem dActiveItem)
                 {
@@ -204,11 +222,37 @@ namespace SBRB_DatabaseSeeder
                     item.ObjectDataId = objectItem.ObjectDataId;
                     _DBObjectDatas.Add(objectItem);
                 }
+
+                if (dItem.learnBlueprintsOnPickup != null)
+                {
+                    for (int j = 0; j < dItem.learnBlueprintsOnPickup.Length; j++)
+                    {
+                        string unlockedItemName = dItem.learnBlueprintsOnPickup[j];
+                        if (_DBRecipeUnlocks.FirstOrDefault(u => u.UnlockedItemName == unlockedItemName &&
+                                                                    u.UnlockingItemId == i &&
+                                                                    u.UnlockingItemSourceModId == _mod.SteamId) != null)
+                        {
+                            _warningMessages.Add($"WARNING - Duplicate unlock for '{unlockedItemName}' from '{dItem.itemName}' not added.\n\tItem path: '{dItem.filePath}'");
+                        }
+                        else
+                        {
+                            _DBRecipeUnlocks.Add(new RecipeUnlock
+                            {
+                                UnlockedItemName = unlockedItemName,
+                                UnlockingItemId = i,
+                                UnlockingItemSourceModId = _mod.SteamId
+                            });
+                        }
+                    }
+                }
             }
         }
 
         static void AddToDatabase()
         {
+            Console.WriteLine();
+            Console.WriteLine("Adding data to database...");
+
             using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
             {
                 db.Database.EnsureDeleted();
@@ -216,7 +260,7 @@ namespace SBRB_DatabaseSeeder
 
                 db.Mods.Add(_mod);
 
-                foreach (var item in _DBitems)
+                foreach (var item in _DBItems)
                 { db.Items.Add(item); }
 
                 foreach (var item in _DBActiveItemDatas)
@@ -228,9 +272,17 @@ namespace SBRB_DatabaseSeeder
                 foreach (var item in _DBConsumeableDatas)
                 { db.ConsumeableDatas.Add(item); }
 
+                foreach (var item in _DBRecipeUnlocks)
+                { db.RecipeUnlocks.Add(item); }
+
                 var count = db.SaveChanges();
                 Console.WriteLine("{0} records saved to database", count);
             }
+        }
+
+        static void LinkUnlocks()
+        {
+
         }
 
         static void temp()

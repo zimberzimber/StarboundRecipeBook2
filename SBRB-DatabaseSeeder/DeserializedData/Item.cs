@@ -28,6 +28,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public int maxStack { get; set; } = 1;
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
+        public string[] learnBlueprintsOnPickup { get; set; }
         public bool SBRBhidden { get; set; }
 
 

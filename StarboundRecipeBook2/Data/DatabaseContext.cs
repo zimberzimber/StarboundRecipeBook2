@@ -18,6 +18,7 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
+        public virtual DbSet<RecipeUnlock> RecipeUnlocks { get; set; }
 
         // Relationships 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -42,7 +43,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<RecipeGroup>().HasKey(rg => rg.RecipeGroupName);
 
             builder.Entity<Relationship_Recipe_RecipeGroup>().HasKey(rrr => new { rrr.SourceModId, rrr.RecipeId, rrr.RecipeGroupName });
-            builder.Entity<Relationship_Item_Item>().HasKey(rii => new { rii.UnlockingItemId, rii.UnlockedItemId });
+            builder.Entity<RecipeUnlock>().HasKey(ru => new { ru.UnlockingItemId, ru.UnlockingItemSourceModId, ru.UnlockedItemName });
 
             // Item Relationships
             {
@@ -52,37 +53,27 @@ namespace StarboundRecipeBook2.Data
                     .HasForeignKey(item => item.SourceModId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
-                    .HasOne(rii => rii.UnlockingItem)
+                builder.Entity<RecipeUnlock>() // Item - RecipeUnlock (M : 1)
+                    .HasOne(ru => ru.UnlockingItem)
                     .WithMany(item => item.Unlocks)
-                    .HasForeignKey(rii => new { rii.UnlockingItemSourceModId, rii.UnlockingItemId })
+                    .HasForeignKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId })
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
-                    .HasOne(rii => rii.UnlockedItem)
-                    .WithMany(item => item.UnlockedBy)
-                    .HasForeignKey(rii => new { rii.UnlockedItemSourceModId, rii.UnlockedItemId })
-                    .OnDelete(DeleteBehavior.Restrict);
-            }
-
-            // Item to ObjectData/ConsumeableData/ActiveItemData
-            {
-
-                builder.Entity<Item>()
+                builder.Entity<Item>() // Item - Object Data (1 : 1)
                     .HasOne(item => item.ObjectData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ObjectDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Item>()
+                builder.Entity<Item>() // Item - Active Item Data (1 : 1)
                     .HasOne(item => item.ActiveItemData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ActiveItemDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Item>()
+                builder.Entity<Item>() // Item - Consumeable Data (1 : 1)
                     .HasOne(item => item.ConsumeableData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ConsumeableDataId })

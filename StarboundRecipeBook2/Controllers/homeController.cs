@@ -19,7 +19,8 @@ namespace StarboundRecipeBook2.Controllers
 
         public IActionResult Index()
         {
-            return View(_itemRepo.GetAllItems().ToList());
+            var z = View(_itemRepo.GetAllItems(includeUnlocks:true).Where(i => i.Unlocks.Count > 0).ToList());
+            return View(z);
         }
     }
 }

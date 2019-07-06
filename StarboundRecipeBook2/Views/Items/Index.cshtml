@@ -1,12 +1,15 @@
 ﻿
-@{ ViewData["Title"] = "Items"; }
 @model List<Item>
+@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
+
+@{ ViewData["Title"] = "Items"; }
 
 @foreach (var item in Model)
 {
-	if (item.Icon != null)
-	{
-		string base64 = Convert.ToBase64String(item.Icon);
-		<img src=@String.Format("data:image/jpg;base64,{0}", base64) />
-	}
+	<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
+		<div class="itemDataContainer">
+			@await Component.InvokeAsync("ItemIcon", item)
+			@Html.Raw(@ColorResolver.ResolveColor(item.ShortDescription))
+		</div>
+	</a>
 }

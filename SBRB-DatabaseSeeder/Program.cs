@@ -10,6 +10,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 // NOTE:
 // Certain edge cases may be discovered and not resolved yet.
@@ -34,6 +35,9 @@ delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
+        static bool silent = false;
+        static FileStream logFile;
+
         static List<string> _itemFiles = new List<string>();
         static List<string> _recipeFiles = new List<string>();
         static List<DeserializedItem> _deserializedItems = new List<DeserializedItem>();
@@ -49,11 +53,9 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
         static void Main()
         {
-            if (false)
-            {
-                RemoveModFromDB(729480149);
-                return;
-            }
+            // Create a file to contain the logged messages
+            Directory.CreateDirectory("logs");
+            logFile = File.Create("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
 
             JSON.SetDefaultOptions(Options.ExcludeNulls);
 
@@ -65,62 +67,69 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 metaString = File.ReadAllText($"{modPath}\\_metadata");
             else
             {
-                Console.WriteLine("No metadata file detected.");
+                Log("No metadata file detected.");
                 Console.ReadKey();
                 return;
             }
 
             Metadata meta = JSON.Deserialize<Metadata>(metaString);
 
-            if (string.IsNullOrEmpty(meta.steamContentId))
+            if (string.IsNullOrWhiteSpace(meta.steamContentId))
             {
                 if (meta.author == "Chucklefish" && meta.name == "base")
                 {
-                    Console.WriteLine("Base game assets. ID is set to -1.");
+                    Log("Base game assets. ID is set to -1.");
                     meta.steamContentId = "-1";
                 }
                 else
                 {
-                    Console.WriteLine("No Steam ID detected.");
+                    Log("No Steam ID detected. Press any key to exit program.");
                     Console.ReadKey();
                     return;
                 }
             }
+            else
+                Log($"Accepted mod with Steam ID {meta.steamContentId}");
 
             _mod = meta.ToMod();
 
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Scanning and sorting mod files...");
-            Console.WriteLine();
+            Log("----------------------------------------");
+            Log("Scanning and sorting mod files...");
+            Log();
             ScanFiles(modPath);
 
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Building item and recipe lists...");
-            Console.WriteLine();
+            Log("----------------------------------------");
+            Log("Building item and recipe lists...");
+            Log();
             BuildItemList();
             BuildRecipeList();
 
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Converting to DB models...");
-            Console.WriteLine();
+            Log("----------------------------------------");
+            Log("Converting to DB models...");
+            Log();
             ConvertToDBItems();
             ConvertToDBRecipes();
 
-            Console.WriteLine();
+            Log();
             if (_warningMessages.Count > 0)
             {
                 for (int i = 0; i < _warningMessages.Count; i++)
-                { Console.WriteLine(_warningMessages[i]); }
+                { Log(_warningMessages[i]); }
 
-                Console.WriteLine("Warnings present. Press any key to continue...");
+                Log("Warnings present. Press any key to continue...");
                 Console.ReadKey();
             }
             else
-                Console.WriteLine("No warnings, proceeding...");
+                Log("No warnings, proceeding...");
 
-            Console.WriteLine("----------------------------------------");
-            Console.WriteLine("Adding to database...");
-            Console.WriteLine();
+            Log("----------------------------------------");
+            Log("Removing old mod records from database...");
+            Log();
+            RemoveModFromDB(_mod.SteamId);
+
+            Log("----------------------------------------");
+            Log("Adding new records to database...");
+            Log();
             AddToDatabase();
         }
 
@@ -150,7 +159,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         {
             for (int i = 0; i < _itemFiles.Count; i++)
             {
-                Console.WriteLine($"Deserializing file '{_itemFiles[i]}'");
+                Log($"Deserializing file '{_itemFiles[i]}'");
 
                 DeserializedItem item = null;
                 string json = File.ReadAllText(_itemFiles[i]).RemoveComments();
@@ -203,7 +212,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
                 DeserializedItem dItem = _deserializedItems[i];
-                Console.WriteLine($"Working on '{dItem.itemName}'...");
+                Log($"Working on '{dItem.itemName}'...");
 
                 Item item = new Item
                 {
@@ -303,8 +312,8 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
         static void AddToDatabase()
         {
-            Console.WriteLine();
-            Console.WriteLine("Adding data to database...");
+            Log();
+            Log("Adding data to database...");
 
             using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
             {
@@ -329,32 +338,42 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 { db.RecipeUnlocks.Add(item); }
 
                 var count = db.SaveChanges();
-                Console.WriteLine("{0} records saved to database", count);
+                Log("{0} records saved to database", count);
             }
         }
 
         static void RemoveModFromDB(int modId)
         {
-            Console.WriteLine();
-            Console.WriteLine($"Removing mod with ID {modId}");
+            Log($"Removing mod with ID {modId}");
 
             using (SqlConnection connection = new SqlConnection(DatabaseContext.CONNECTION_STRING))
             using (SqlCommand command = new SqlCommand(string.Format(MOD_REMOVAL_QUERY, modId), connection))
             {
                 connection.Open();
                 using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            Console.WriteLine(reader.GetValue(i));
-                        }
-                        Console.WriteLine();
-                    }
-                };
+                    while (reader.Read()) { };
                 connection.Close();
             }
+        }
+
+
+        static void Log(string message)
+        {
+            WriteToFile(message);
+            if (!silent)
+                Console.WriteLine(message);
+        }
+
+        static void Log()
+            => Log("\n");
+
+        static void Log(string message, params object[] args)
+            => Log(string.Format(message, args));
+
+        static void WriteToFile(string message)
+        {
+            byte[] buffer = new UTF8Encoding(true).GetBytes($"\n{message}");
+            logFile.Write(buffer, 0, buffer.Length);
         }
 
         static void AddWarning(string warning)

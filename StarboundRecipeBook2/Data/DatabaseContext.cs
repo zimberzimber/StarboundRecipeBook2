@@ -51,34 +51,34 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(item => item.SourceMod)
                     .WithMany(mod => mod.AddedItems)
                     .HasForeignKey(item => item.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Item>() // Item - RecipeUnlock (M : 1)
                     .HasMany(item => item.Unlocks)
                     .WithOne(ru => ru.UnlockingItem)
                     .HasForeignKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Item>() // Item - Object Data (1 : 1)
                     .HasOne(item => item.ObjectData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ObjectDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Item>() // Item - Active Item Data (1 : 1)
                     .HasOne(item => item.ActiveItemData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ActiveItemDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Item>() // Item - consumable Data (1 : 1)
                     .HasOne(item => item.consumableData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.consumableDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
             }
 
             // Recipe Relationships
@@ -87,25 +87,25 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(recipe => recipe.SourceMod)
                     .WithMany(mod => mod.AddedRecipes)
                     .HasForeignKey(recipe => recipe.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Recipe>() // Recipe - RecipeInput (M : 1)
                     .HasMany(recipe => recipe.RecipeInputs)
                     .WithOne(recipeInput => recipeInput.Recipe)
                     .HasForeignKey(recipeInput => new { recipeInput.SourceModId, recipeInput.RecipeInputId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Relationship_Recipe_RecipeGroup>() // Recipe - RecipeGroups (M : M)
                     .HasOne(rrr => rrr.Recipe)
                     .WithMany(recipe => recipe.RecipeGroups)
                     .HasForeignKey(rrr => new { rrr.SourceModId, rrr.RecipeId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Relationship_Recipe_RecipeGroup>() // Recipe - RecipeGroups (M : M)
                     .HasOne(rrr => rrr.RecipeGroup)
                     .WithMany(recipeGroups => recipeGroups.Recipes)
                     .HasForeignKey(rrr => rrr.RecipeGroupName)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
             }
         }
     }

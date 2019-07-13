@@ -27,7 +27,12 @@ namespace StarboundRecipeBook2.Services
             {
                 // Every 2nd is the color tag
                 if (i % 2 == 1)
-                    result.Append(string.Format(FORMATTED_START, splits[i]));
+                {
+                    if (splits[i].ToLower().Equals("white"))
+                        result.Append(string.Format(FORMATTED_START, "reset"));
+                    else
+                        result.Append(string.Format(FORMATTED_START, splits[i]));
+                }
                 else
                 {
                     if (i > 0)

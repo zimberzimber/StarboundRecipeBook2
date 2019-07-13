@@ -9,11 +9,13 @@ namespace StarboundRecipeBook2.Data
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
 
+        public const string CONNECTION_STRING = "Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework";
+
         // Tables
         public virtual DbSet<Mod> Mods { get; set; }
         public virtual DbSet<Item> Items { get; set; }
         public virtual DbSet<ActiveItemData> ActiveItemDatas { get; set; }
-        public virtual DbSet<ConsumeableData> ConsumeableDatas { get; set; }
+        public virtual DbSet<consumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
@@ -22,9 +24,7 @@ namespace StarboundRecipeBook2.Data
 
         // Relationships 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework");
-        }
+        { optionsBuilder.UseSqlServer(CONNECTION_STRING); }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -34,7 +34,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Mod>().HasKey(m => m.SteamId);
             builder.Entity<Item>().HasKey(i => new { i.SourceModId, i.ItemId });
 
-            builder.Entity<ConsumeableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumeableDataId });
+            builder.Entity<consumableData>().HasKey(cd => new { cd.SourceModId, cd.consumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
             builder.Entity<ObjectData>().HasKey(od => new { od.SourceModId, od.ObjectDataId });
 
@@ -43,7 +43,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<RecipeGroup>().HasKey(rg => rg.RecipeGroupName);
 
             builder.Entity<Relationship_Recipe_RecipeGroup>().HasKey(rrr => new { rrr.SourceModId, rrr.RecipeId, rrr.RecipeGroupName });
-            builder.Entity<RecipeUnlock>().HasKey(ru => new { ru.UnlockingItemId, ru.UnlockingItemSourceModId, ru.UnlockedItemName });
+            builder.Entity<RecipeUnlock>().HasKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId, ru.UnlockedItemName });
 
             // Item Relationships
             {
@@ -53,9 +53,9 @@ namespace StarboundRecipeBook2.Data
                     .HasForeignKey(item => item.SourceModId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<RecipeUnlock>() // Item - RecipeUnlock (M : 1)
-                    .HasOne(ru => ru.UnlockingItem)
-                    .WithMany(item => item.Unlocks)
+                builder.Entity<Item>() // Item - RecipeUnlock (M : 1)
+                    .HasMany(item => item.Unlocks)
+                    .WithOne(ru => ru.UnlockingItem)
                     .HasForeignKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId })
                     .OnDelete(DeleteBehavior.Restrict);
 
@@ -73,10 +73,10 @@ namespace StarboundRecipeBook2.Data
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                builder.Entity<Item>() // Item - Consumeable Data (1 : 1)
-                    .HasOne(item => item.ConsumeableData)
+                builder.Entity<Item>() // Item - consumable Data (1 : 1)
+                    .HasOne(item => item.consumableData)
                     .WithOne(obj => obj.Item)
-                    .HasForeignKey<Item>(item => new { item.SourceModId, item.ConsumeableDataId })
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.consumableDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
             }
@@ -107,7 +107,6 @@ namespace StarboundRecipeBook2.Data
                     .HasForeignKey(rrr => rrr.RecipeGroupName)
                     .OnDelete(DeleteBehavior.Restrict);
             }
-
         }
     }
 }

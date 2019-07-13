@@ -13,8 +13,8 @@ namespace SBRB_DatabaseSeeder.Workers
             {
                 case ".object":
                     return ItemTypes.objectItem;
-                case ".consumeable":
-                    return ItemTypes.consumeableItem;
+                case ".consumable":
+                    return ItemTypes.consumableItem;
                 case ".activeitem":
                     return ItemTypes.activeItem;
                 default:

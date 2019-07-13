@@ -5,7 +5,7 @@ namespace StarboundRecipeBook2.Models
     public class Item
     {
         public enum Rarities : byte { common, uncommon, rare, epic, legendary, essential }
-        public enum ItemTypes : byte { genericItem, activeItem, consumeableItem, objectItem}
+        public enum ItemTypes : byte { genericItem, activeItem, consumableItem, objectItem }
 
         public int ItemId { get; set; } // PPK
         public string InternalName { get; set; }
@@ -24,12 +24,12 @@ namespace StarboundRecipeBook2.Models
         public int SourceModId { get; set; } // PPK + FK
         public int? ObjectDataId { get; set; }
         public int? ActiveItemDataId { get; set; }
-        public int? ConsumeableDataId { get; set; }
+        public int? consumableDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual ObjectData ObjectData { get; set; }
         public virtual ActiveItemData ActiveItemData { get; set; }
-        public virtual ConsumeableData ConsumeableData { get; set; }
+        public virtual consumableData consumableData { get; set; }
 
         public virtual ICollection<RecipeInput> RecipesUsedIn { get; set; }
         public virtual ICollection<Recipe> RecipesCraftedFrom { get; set; }

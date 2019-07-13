@@ -2,10 +2,26 @@
 @{ ViewData["Title"] = "ViewItem"; }
 
 @model Item
-@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
+@inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 
 <div class="itemDataContainer">
-	@await Component.InvokeAsync("ItemIcon", Model)
-	@Html.Raw(@ColorResolver.ResolveColor(Model.ShortDescription))
+	<div>
+		@await Component.InvokeAsync("ItemIcon", Model)
+		@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
+	</div>
+
+	<div>
+		@await Component.InvokeAsync("ColoredText", Model.Description)
+	</div>
+
+	@if (Model.Unlocks != null)
+	{
+		foreach (var item in Model.Unlocks)
+		{
+			<div>
+				@await Component.InvokeAsync("ColoredText", String.Format("{0} unlocks {1}", Model.ShortDescription, item.UnlockedItemName))
+			</div>
+		}
+	}
 </div>
 

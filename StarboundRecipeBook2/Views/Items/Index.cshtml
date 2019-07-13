@@ -4,12 +4,44 @@
 
 @{ ViewData["Title"] = "Items"; }
 
-@foreach (var item in Model)
-{
-	<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
-		<div class="itemDataContainer">
-			@await Component.InvokeAsync("ItemIcon", item)
-			@Html.Raw(@ColorResolver.ResolveColor(item.ShortDescription))
+
+	<form>
+		<div>
+			Filter items: <input type="text" name="itemSearch" />
 		</div>
-	</a>
+		<div>
+			generic: <input type="checkbox" name="filterGeneric" checked="checked" />
+		</div>
+		<div>
+			objects: <input type="checkbox" name="filterObjects" checked="checked" />
+		</div>
+		<div>
+			activeItems: <input type="checkbox" name="filterActiveItems" checked="checked" />
+		</div>
+		<div>
+			consumables: <input type="checkbox" name="filterconsumables" checked="checked" />
+		</div>
+		<div>
+			Partial name: <input type="checkbox" name="partialNameMatch" checked="checked" />
+		</div>
+		<div>
+			<input type="submit" value="Filter" />
+		</div>
+	</form>
+
+@if (Model == null || Model.Count == 0)
+{
+	<div>Nothing to display.</div>
+}
+else
+{
+	@foreach (var item in Model)
+	{
+		<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
+			<div class="itemDataContainer">
+				@await Component.InvokeAsync("ItemIcon", item)
+				@await Component.InvokeAsync("ColoredText", item.ShortDescription)
+			</div>
+		</a>
+	}
 }

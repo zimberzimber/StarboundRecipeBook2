@@ -30,7 +30,12 @@
 	}
 }
 
-.itemDataContainer {
+.coloredTextContainer {
+	display: inline-block;
+	white-space: pre;
+	margin: 0;
+	padding: 0;
+
 	p {
 		display: inline-block;
 		margin: 0;

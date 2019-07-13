@@ -54,6 +54,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public DeserializedInputOutput output;
         public string[] groups;
         public int outputCount;
+        public string filePath;
 
         /*public Recipe ToRecipe()
         {

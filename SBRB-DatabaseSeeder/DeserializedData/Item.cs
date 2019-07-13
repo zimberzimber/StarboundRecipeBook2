@@ -7,7 +7,7 @@ using System.IO;
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
     /// <summary>
-    /// Class storing deserialized item contents. Including active items, consumeables, and objects.
+    /// Class storing deserialized item contents. Including active items, consumables, and objects.
     /// </summary>
     class DeserializedItem
     {
@@ -17,7 +17,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             public string image { get; set; }
         }
 
-        public enum ItemTypes { Generic, Object, Consumeable, ActiveItem };
+        public enum ItemTypes { Generic, Object, Consumable, ActiveItem };
 
         public string itemName { get; set; }
         public string shortdescription { get; set; }
@@ -104,9 +104,9 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string objectName { get => itemName; set => itemName = value; }
     }
 
-    class DeserializedConsumeable : DeserializedItem
+    class DeserializedConsumable : DeserializedItem
     {
-        public int foodValue { get; set; }
+        public double foodValue { get; set; }
     }
 
     class DeserializedActiveItem : DeserializedItem

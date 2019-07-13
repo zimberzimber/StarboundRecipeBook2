@@ -92,7 +92,7 @@ namespace StarboundRecipeBook2.Data
                 builder.Entity<Recipe>() // Recipe - RecipeInput (M : 1)
                     .HasMany(recipe => recipe.RecipeInputs)
                     .WithOne(recipeInput => recipeInput.Recipe)
-                    .HasForeignKey(recipeInput => new { recipeInput.SourceModId, recipeInput.RecipeInputId })
+                    .HasForeignKey(recipeInput => new { recipeInput.SourceModId, recipeInput.RecipeId })
                     .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Relationship_Recipe_RecipeGroup>() // Recipe - RecipeGroups (M : M)

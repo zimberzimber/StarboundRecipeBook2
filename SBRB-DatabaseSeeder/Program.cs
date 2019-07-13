@@ -16,6 +16,9 @@ using System.Text;
 // Certain edge cases may be discovered and not resolved yet.
 // Look for them via Ctrl + F 'EDGE CASE' through the entire project
 
+// NOTE:
+// Raw queries seem to be faster. Should try using them when pulling data instead of throught EF core
+
 namespace SBRB_DatabaseSeeder
 {
     class Program
@@ -48,6 +51,8 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
         static List<consumableData> _DBconsumableDatas = new List<consumableData>();
         static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
+        static List<Recipe> _DBRecipes = new List<Recipe>();
+        static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
 
         static List<string> _warningMessages = new List<string>();
 
@@ -61,7 +66,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
             string metaString;
 
-            if (File.Exists($"{ modPath}\\.metadata"))
+            if (File.Exists($"{modPath}\\.metadata"))
                 metaString = File.ReadAllText($"{modPath}\\.metadata");
             else if (File.Exists($"{modPath}\\_metadata"))
                 metaString = File.ReadAllText($"{modPath}\\_metadata");
@@ -232,7 +237,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 if (!dItem.SBRBhidden)
                 {
                     item.InternalName = dItem.itemName;
-                    item.FilePath = dItem.filePath.Split(modPath)[1];
+                    item.FilePath = dItem.filePath.ToReletivePath(modPath);
                 }
 
                 _DBItems.Add(item);
@@ -286,8 +291,8 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     {
                         string unlockedItemName = dItem.learnBlueprintsOnPickup[j];
                         if (_DBRecipeUnlocks.FirstOrDefault(u => u.UnlockedItemName == unlockedItemName &&
-                                                                    u.UnlockingItemId == i &&
-                                                                    u.UnlockingItemSourceModId == _mod.SteamId) != null)
+                                                                 u.UnlockingItemId == i &&
+                                                                 u.UnlockingItemSourceModId == _mod.SteamId) != null)
                         {
                             AddWarning($"Duplicate unlock for '{unlockedItemName}' from '{dItem.itemName}' not added.\n\tItem path: '{dItem.filePath}'");
                         }
@@ -307,17 +312,41 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
         static void ConvertToDBRecipes()
         {
+            int recipeCount = 0;
 
+            for (int i = 0; i < _deserializedRecipes.Count; i++)
+            {
+                DeserializedRecipe dRecipe = _deserializedRecipes[i];
+
+                _DBRecipes.Add(new Recipe
+                {
+                    FilePath = dRecipe.filePath.ToReletivePath(modPath),
+                    OutputCount = dRecipe.output.count,
+                    OutputItemName = dRecipe.output.item,
+                    SourceModId = _mod.SteamId,
+                    RecipeId = i,
+                });
+
+                for (int j = 0; j < dRecipe.input.Length; j++)
+                {
+                    _DBRecipeInputs.Add(new RecipeInput
+                    {
+                        InputCount = dRecipe.input[j].count,
+                        InputItemName = dRecipe.input[j].item,
+                        RecipeId = i,
+                        SourceModId = _mod.SteamId,
+                        RecipeInputId = recipeCount
+                    });
+                    recipeCount++;
+                }
+            }
         }
 
         static void AddToDatabase()
         {
-            Log();
-            Log("Adding data to database...");
-
             using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
             {
-                db.Database.EnsureDeleted();
+                //db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
 
                 db.Mods.Add(_mod);
@@ -337,6 +366,12 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 foreach (var item in _DBRecipeUnlocks)
                 { db.RecipeUnlocks.Add(item); }
 
+                foreach (var item in _DBRecipes)
+                { db.Recipes.Add(item); }
+
+                foreach (var item in _DBRecipeInputs)
+                { db.RecipeInputs.Add(item); }
+
                 var count = db.SaveChanges();
                 Log("{0} records saved to database", count);
             }
@@ -344,8 +379,6 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
         static void RemoveModFromDB(int modId)
         {
-            Log($"Removing mod with ID {modId}");
-
             using (SqlConnection connection = new SqlConnection(DatabaseContext.CONNECTION_STRING))
             using (SqlCommand command = new SqlCommand(string.Format(MOD_REMOVAL_QUERY, modId), connection))
             {

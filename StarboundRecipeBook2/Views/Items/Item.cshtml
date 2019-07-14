@@ -3,6 +3,7 @@
 
 @model Item
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
+@inject StarboundRecipeBook2.Services.IRecipeRepository RecipeRepo
 
 <div class="itemDataContainer">
 	<div>
@@ -10,17 +11,83 @@
 		@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
 	</div>
 
+	@if (@Model.InternalName == null)
+	{
+		<div>
+			Internal name and path are hidden.
+		</div>
+	}
+	else
+	{
+		<div>
+			Internal name: @Model.InternalName
+		</div>
+		<div>
+			Definition at: @Model.FilePath
+		</div>
+	}
+
+	<br />
 	<div>
 		@await Component.InvokeAsync("ColoredText", Model.Description)
 	</div>
 
+	<br />
 	@if (Model.Unlocks != null)
 	{
-		foreach (var item in Model.Unlocks)
+		<div>
+			Unlocks recipes for
+			@foreach (var unlock in Model.Unlocks)
+			{
+				<div>
+					@await Component.InvokeAsync("ItemDisplayFromInternalName", unlock.UnlockedItemName)
+				</div>
+			}
+		</div>
+	}
+	<br />
+
+	@if (Model.InternalName == null)
+	{
+		<div>Item is hidden.</div>
+	}
+	else
+	{
+		var recipesForItem = RecipeRepo.GetRecipesForItem(Model.InternalName);
+		if (recipesForItem.Count > 0)
 		{
-			<div>
-				@await Component.InvokeAsync("ColoredText", String.Format("{0} unlocks {1}", Model.ShortDescription, item.UnlockedItemName))
-			</div>
+			foreach (var recipe in recipesForItem)
+			{
+				<br />
+				<div>Recipe at @recipe.FilePath</div>
+				<div>
+					@foreach (var input in recipe.RecipeInputs)
+					{
+						<div>@await Component.InvokeAsync("ItemDisplayFromInternalName", input.InputItemName) x @input.InputCount</div>
+					}
+				</div>
+			}
+		}
+		else
+		{
+			<div>No recipes for crafting this item.</div>
+		}
+
+		<br />
+
+		var recipesFromItem = RecipeRepo.GetRecipesCraftedWithItem(Model.InternalName);
+		if (recipesFromItem.Count > 0)
+		{
+			foreach (var recipe in recipesFromItem)
+			{
+				<div>
+					Crafts '@recipe.OutputItemName'
+				</div>
+			}
+		}
+		else
+		{
+			<div>No recipes are crafted with this item.</div>
 		}
 	}
 </div>

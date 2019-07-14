@@ -5,29 +5,97 @@
 @{ ViewData["Title"] = "Items"; }
 
 
-	<form>
+<form>
+	<div>
+		Filter items: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
+	</div>
+
+	@if (ViewBag.filterGeneric == null)
+	{
 		<div>
-			Filter items: <input type="text" name="itemSearch" />
+			generic: <input type="checkbox" name="filterGeneric" />
 		</div>
+	}
+	else
+	{
 		<div>
 			generic: <input type="checkbox" name="filterGeneric" checked="checked" />
 		</div>
+	}
+
+	@if (ViewBag.filterObjects == null)
+	{
+		<div>
+			objects: <input type="checkbox" name="filterObjects" />
+		</div>
+	}
+	else
+	{
 		<div>
 			objects: <input type="checkbox" name="filterObjects" checked="checked" />
 		</div>
+	}
+
+	@if (ViewBag.filterActiveItems == null)
+	{
+		<div>
+			activeItems: <input type="checkbox" name="filterActiveItems" />
+		</div>
+	}
+	else
+	{
 		<div>
 			activeItems: <input type="checkbox" name="filterActiveItems" checked="checked" />
 		</div>
+	}
+
+	@if (ViewBag.filterConsumables == null)
+	{
 		<div>
-			consumables: <input type="checkbox" name="filterconsumables" checked="checked" />
+			consumeables: <input type="checkbox" name="filterConsumables" />
 		</div>
+	}
+	else
+	{
 		<div>
-			Partial name: <input type="checkbox" name="partialNameMatch" checked="checked" />
+			consumeables: <input type="checkbox" name="filterConsumables" checked="checked" />
 		</div>
+	}
+
+	@if (ViewBag.partialNameMatch == null)
+	{
 		<div>
-			<input type="submit" value="Filter" />
+			Partial name match: <input type="checkbox" name="partialNameMatch" />
 		</div>
-	</form>
+	}
+	else
+	{
+		<div>
+			Partial name match: <input type="checkbox" name="partialNameMatch" checked="checked" />
+		</div>
+	}
+
+	<div>
+		Search by...
+		@if (ViewBag.searchBySelected == null || ViewBag.searchBySelected == "displayedName")
+		{
+			<br />
+			<input type="radio" name="searchBy" value="displayedName" checked="checked" /><t>Displayed Name</t>
+			<br />
+			<input type="radio" name="searchBy" value="internalName" /><t>Internal Name</t>
+		}
+		else
+		{
+			<br />
+			<input type="radio" name="searchBy" value="displayedName" /><t>Displayed Name</t>
+			<br />
+			<input type="radio" name="searchBy" value="internalName" checked="checked" /><t>Internal Name</t>
+		}
+	</div>
+	<div>
+		<input type="submit" value="Filter" />
+	</div>
+</form>
 
 @if (Model == null || Model.Count == 0)
 {

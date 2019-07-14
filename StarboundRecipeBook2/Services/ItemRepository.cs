@@ -13,9 +13,8 @@ namespace StarboundRecipeBook2.Services
     {
         None = 0,
         Mods = 1,
-        Recipes = 2,
-        Unlocks = 4,
-        All = 8
+        Unlocks = 2,
+        All = 3
     };
 
     [Flags]
@@ -43,14 +42,14 @@ namespace StarboundRecipeBook2.Services
         /// <param name="partialMatch">Whether the names must fully match (excluding case)</param>
         /// <param name="options">Include options for the query</param>
         /// <returns></returns>
-        List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.Generic);
+        List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All);
 
         /// <summary>Get a queriable of items matching the internal name</summary>
         /// <param name="internalName">Internal name to search by</param>
         /// <param name="partialMatch">Whether the names must fully match (excluding case)</param>
         /// <param name="options">Include options for the query</param>
         /// <returns></returns>
-        List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.Generic);
+        List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All);
 
         /// <summary>Get a queriable list of all the items.</summary>
         /// <param name="skip">Number of items to skip over</param>
@@ -75,15 +74,13 @@ namespace StarboundRecipeBook2.Services
                 .Include(i => i.consumableData)
                 .Include(i => i.ActiveItemData)
                 .If(includeOptions.HasFlag(ItemIncludeOptions.Mods), q => q.Include(i => i.SourceMod))
-                .If(includeOptions.HasFlag(ItemIncludeOptions.Recipes), q => q.Include(i => i.RecipesUsedIn).Include(i2 => i2.RecipesCraftedFrom))
                 .If(includeOptions.HasFlag(ItemIncludeOptions.Unlocks), q => q.Include(i => i.Unlocks))
-                .OrderBy(i => i.ItemId)
                 .Skip(skip)
                 .Take(count);
         }
 
         // Helper method that queries searches by type
-        IQueryable<Item> SearchByType(IQueryable<Item> baseQueriable, ItemSearchOptions searchOptions = ItemSearchOptions.Generic)
+        IQueryable<Item> SearchByType(IQueryable<Item> baseQueriable, ItemSearchOptions searchOptions = ItemSearchOptions.All)
         {
             var baseQ = baseQueriable; // Keep a copy of the original query, for pulling out relevant data and adding it into the returned query
 
@@ -114,23 +111,25 @@ namespace StarboundRecipeBook2.Services
 
         public List<Item> GetAllItems(int skip = 0, int count = int.MaxValue, ItemIncludeOptions options = ItemIncludeOptions.None)
         {
-            return InitialQuery(skip, count, options).ToList();
+            return InitialQuery(skip, count, options).OrderBy(i => i.ShortDescription.RemoveFormatting()).ToList();
         }
 
-        public List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.Generic)
+        public List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All)
         {
             var queriable = InitialQuery(includeOptions: options)
-                    .If(partialMatch, q => q.Where(i => i.ShortDescription.ToLower().StartsWith(shortDescription.ToLower())))
-                    .If(!partialMatch, q => q.Where(i => i.ShortDescription.ToLower().Equals(shortDescription.ToLower())));
+                    .If(partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().ToLower().StartsWith(shortDescription.ToLower())))
+                    .If(!partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().ToLower().Equals(shortDescription.ToLower())))
+                    .OrderBy(i => i.ShortDescription.RemoveFormatting());
 
             return SearchByType(queriable, searchOptions).ToList();
         }
 
-        public List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.Generic)
+        public List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All)
         {
             var queriable = InitialQuery(includeOptions: options)
                     .If(partialMatch, q => q.Where(i => i.InternalName.ToLower().StartsWith(internalName.ToLower())))
-                    .If(!partialMatch, q => q.Where(i => i.InternalName.ToLower().Equals(internalName.ToLower())));
+                    .If(!partialMatch, q => q.Where(i => i.InternalName.ToLower().Equals(internalName.ToLower())))
+                    .OrderBy(i => i.InternalName);
 
             return SearchByType(queriable, searchOptions).ToList();
         }

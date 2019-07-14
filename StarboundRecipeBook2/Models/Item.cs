@@ -31,8 +31,6 @@ namespace StarboundRecipeBook2.Models
         public virtual ActiveItemData ActiveItemData { get; set; }
         public virtual consumableData consumableData { get; set; }
 
-        public virtual ICollection<RecipeInput> RecipesUsedIn { get; set; }
-        public virtual ICollection<Recipe> RecipesCraftedFrom { get; set; }
         public virtual ICollection<RecipeUnlock> Unlocks { get; set; }
     }
 }

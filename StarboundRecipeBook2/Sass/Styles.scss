@@ -42,3 +42,20 @@
 		padding: 0;
 	}
 }
+
+.ItemReferenceDisplayLink {
+	display: inline-block;
+	color: unset;
+
+	.ItemReferenceDisplay {
+
+	}
+
+	.NonexistentItem {
+		color: red;
+	}
+}
+
+.InlineBlockDiv {
+	display: inline-block;
+}

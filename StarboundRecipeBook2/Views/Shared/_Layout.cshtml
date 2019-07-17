@@ -3,11 +3,22 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	<title>@ViewData["Title"] - MVC_Project</title>
+	<title>SBRB - @ViewData["Title"]</title>
 
 	<link rel="stylesheet" href="~/styles/styles.css" />
 </head>
 <body>
-	@RenderBody()
+	<nav class="header">
+		|
+		<a id="home-index-nav" asp-controller="Home" asp-action="Index">Home</a> |
+		<a id="items-index-nav" asp-controller="Items" asp-action="Index">Items</a> |
+		<a id="mods-index-nav" asp-controller="Mods" asp-action="Index">Mods</a> |
+	</nav>
+	<div class="bodyContainer">
+		@RenderBody()
+	</div>
+	<div class="footer">
+
+	</div>
 </body>
 </html>

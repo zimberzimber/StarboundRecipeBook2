@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using StarboundRecipeBook2.Helpers;
 using StarboundRecipeBook2.Services;
 
 namespace StarboundRecipeBook2.Controllers
@@ -10,86 +12,68 @@ namespace StarboundRecipeBook2.Controllers
         public ItemsController(IItemRepository itemRepo)
         {
             _itemRepo = itemRepo;
+
+            // Set default search options
+            //bool? generic = Request.Cookies["filterGeneric"]?.ToBool();
+            //bool? objects = Request.Cookies["filterObjects"]?.ToBool();
+            //bool? activeItems = Request.Cookies["filterActiveItems"]?.ToBool();
+            //bool? consumables = Request.Cookies["filterConsumables"]?.ToBool();
+            //bool? partialNameMatch = Request.Cookies["partialNameMatch"]?.ToBool();
+
+            //if (generic == null) Response.Cookies.Append("filterGeneric", "true");
+            //if (objects == null) Response.Cookies.Append("filterObjects", "true");
+            //if (activeItems == null) Response.Cookies.Append("filterActiveItems", "true");
+            //if (consumables == null) Response.Cookies.Append("filterConsumables", "true");
+            //if (partialNameMatch == null) Response.Cookies.Append("partialNameMatch", "true");
         }
 
         public IActionResult Index()
         {
             ItemSearchOptions searchOptions = ItemSearchOptions.None;
 
+            bool? generic = Request.Cookies["filterGeneric"].ToBool();
+            bool? objects = Request.Cookies["filterObjects"].ToBool();
+            bool? activeItems = Request.Cookies["filterActiveItems"].ToBool();
+            bool? consumables = Request.Cookies["filterConsumables"].ToBool();
+            bool? partialNameMatch = Request.Cookies["partialNameMatch"].ToBool();
+            string searchBySelected = Request.Cookies["searchBy"];
+
+            // searchByInternalName
+            // searchByDisplayedName
+
             bool hasItemSearch = HttpContext.Request.Query.TryGetValue("itemSearch", out var itemSearch);
-            bool generic = HttpContext.Request.Query.TryGetValue("filterGeneric", out var _);
-            bool objects = HttpContext.Request.Query.TryGetValue("filterObjects", out var _);
-            bool activeItems = HttpContext.Request.Query.TryGetValue("filterActiveItems", out var _);
-            bool consumables = HttpContext.Request.Query.TryGetValue("filterConsumables", out var _);
-            bool partialNameMatch = HttpContext.Request.Query.TryGetValue("partialNameMatch", out var _);
-            bool searchBySelected = HttpContext.Request.Query.TryGetValue("searchBy", out var searchBy);
 
             // Add flags based on check boxes
-            if (generic)
-            {
-                ViewBag.filterGeneric = true;
+            if (generic == true)
                 searchOptions |= ItemSearchOptions.Generic;
-            }
-            else
-                ViewBag.filterGeneric = null;
 
-            if (objects)
-            {
-                ViewBag.filterObjects = true;
+            if (objects == true)
                 searchOptions |= ItemSearchOptions.Object;
-            }
-            else
-                ViewBag.filterObjects = null;
 
-            if (activeItems)
-            {
-                ViewBag.filterActiveItems = true;
+            if (activeItems == true)
                 searchOptions |= ItemSearchOptions.ActiveItem;
-            }
-            else
-                ViewBag.filterActiveItems = null;
 
-            if (consumables)
-            {
-                ViewBag.filterConsumables = true;
-                searchOptions |= ItemSearchOptions.consumable;
-            }
-            else
-                ViewBag.filterConsumables = null;
+            if (consumables == true)
+                searchOptions |= ItemSearchOptions.Consumable;
 
-            if (partialNameMatch)
-                ViewBag.partialNameMatch = true;
-            else
-                ViewBag.partialNameMatch = null;
+            // No ItemSearchOptions selected
+            if (searchOptions == ItemSearchOptions.None)
+                return View();
 
-            if (searchBySelected && searchBy == "internalName")
-                ViewBag.searchBySelected = "internalName";
-            else
-                ViewBag.searchBySelected = "displayedName";
-
-            // No ItemSearchOptions selected  -OR-  partialNameMatch is off, and searching for empty string
-            if (searchOptions == ItemSearchOptions.None || (!partialNameMatch && (!hasItemSearch || string.IsNullOrWhiteSpace(itemSearch))))
+            // Empty text box
+            else if (!hasItemSearch || string.IsNullOrWhiteSpace(itemSearch))
                 return View();
 
             // Not an empty search string
-            else if (hasItemSearch && !string.IsNullOrWhiteSpace(itemSearch))
+            else
             {
                 ViewBag.itemSearch = itemSearch;
 
                 // Default to displayed name if no option is picked
-                if (searchBySelected && searchBy == "internalName")
-                    return View(_itemRepo.GetItemsByInternalName(itemSearch, partialMatch: partialNameMatch, searchOptions: searchOptions));
+                if (searchBySelected == "searchByInternalName")
+                    return View(_itemRepo.GetItemsByInternalName(itemSearch, partialMatch: partialNameMatch.GetValueOrDefault(), searchOptions: searchOptions));
                 else
-                    return View(_itemRepo.GetItemsByShortDescription(itemSearch, partialMatch: partialNameMatch, searchOptions: searchOptions));
-            }
-
-            else
-            {
-                // Default to displayed name if no option is picked
-                if (searchBySelected && searchBy == "internalName")
-                    return View(_itemRepo.GetItemsByInternalName("", partialMatch: true, searchOptions: searchOptions));
-                else
-                    return View(_itemRepo.GetItemsByShortDescription("", partialMatch: true, searchOptions: searchOptions));
+                    return View(_itemRepo.GetItemsByShortDescription(itemSearch, partialMatch: partialNameMatch.GetValueOrDefault(), searchOptions: searchOptions));
             }
         }
 

@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace StarboundRecipeBook2.ViewComponents
 {
-    public class ItemDisplayFromInternalNameViewComponent : ViewComponent
+    public class ItemReferenceFromInternalNameViewComponent : ViewComponent
     {
         IItemRepository _itemRepo;
 
-        public ItemDisplayFromInternalNameViewComponent(IItemRepository itemRepo)
+        public ItemReferenceFromInternalNameViewComponent(IItemRepository itemRepo)
         {
             _itemRepo = itemRepo;
         }

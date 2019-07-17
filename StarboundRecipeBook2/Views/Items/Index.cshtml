@@ -1,101 +1,45 @@
-﻿
-@model List<Item>
+﻿@model List<Item>
 @inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
 
 @{ ViewData["Title"] = "Items"; }
 
+<script src="~/scripts/itemsPage.js"></script>
 
-<form>
+<form id="searchForm">
 	<div>
-		Filter items: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
-	</div>
-
-	@if (ViewBag.filterGeneric == null)
-	{
-		<div>
-			generic: <input type="checkbox" name="filterGeneric" />
-		</div>
-	}
-	else
-	{
-		<div>
-			generic: <input type="checkbox" name="filterGeneric" checked="checked" />
-		</div>
-	}
-
-	@if (ViewBag.filterObjects == null)
-	{
-		<div>
-			objects: <input type="checkbox" name="filterObjects" />
-		</div>
-	}
-	else
-	{
-		<div>
-			objects: <input type="checkbox" name="filterObjects" checked="checked" />
-		</div>
-	}
-
-	@if (ViewBag.filterActiveItems == null)
-	{
-		<div>
-			activeItems: <input type="checkbox" name="filterActiveItems" />
-		</div>
-	}
-	else
-	{
-		<div>
-			activeItems: <input type="checkbox" name="filterActiveItems" checked="checked" />
-		</div>
-	}
-
-	@if (ViewBag.filterConsumables == null)
-	{
-		<div>
-			consumeables: <input type="checkbox" name="filterConsumables" />
-		</div>
-	}
-	else
-	{
-		<div>
-			consumeables: <input type="checkbox" name="filterConsumables" checked="checked" />
-		</div>
-	}
-
-	@if (ViewBag.partialNameMatch == null)
-	{
-		<div>
-			Partial name match: <input type="checkbox" name="partialNameMatch" />
-		</div>
-	}
-	else
-	{
-		<div>
-			Partial name match: <input type="checkbox" name="partialNameMatch" checked="checked" />
-		</div>
-	}
-
-	<div>
-		Search by...
-		@if (ViewBag.searchBySelected == null || ViewBag.searchBySelected == "displayedName")
-		{
-			<br />
-			<input type="radio" name="searchBy" value="displayedName" checked="checked" /><t>Displayed Name</t>
-			<br />
-			<input type="radio" name="searchBy" value="internalName" /><t>Internal Name</t>
-		}
-		else
-		{
-			<br />
-			<input type="radio" name="searchBy" value="displayedName" /><t>Displayed Name</t>
-			<br />
-			<input type="radio" name="searchBy" value="internalName" checked="checked" /><t>Internal Name</t>
-		}
-	</div>
-	<div>
-		<input type="submit" value="Filter" />
+		Search by name: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
 	</div>
 </form>
+
+<table class="searchOptionsTable">
+	<tr class="searchOptionsTableTitle">
+		<th>Search Options</th>
+		<th>Item Types</th>
+	</tr>
+	<tr>
+		<th>
+			<input type="checkbox" id="partialNameMatch" onclick='filterCheckboxTick(this)' /> Match name partially
+			<br />
+			<input type="radio" id="searchByDisplayedName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Displayed Name</t>
+			<br />
+			<input type="radio" id="searchByInternalName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Internal Name</t>
+		</th>
+		<th>
+			<input type="checkbox" id="filterGeneric" onclick='filterCheckboxTick(this)' /> Generic items
+			<br />
+			<input type="checkbox" id="filterObjects" onclick='filterCheckboxTick(this)' /> Objects
+			<br />
+			<input type="checkbox" id="filterActiveItems" onclick='filterCheckboxTick(this)' /> Active items
+			<br />
+			<input type="checkbox" id="filterConsumables" onclick='filterCheckboxTick(this)' /> Consumeables
+		</th>
+	</tr>
+	<tr>
+		<th colspan="2">
+			<input type="submit" value="Search" form="searchForm" style="width:100%"/>
+		</th>
+	</tr>
+</table>
 
 @if (Model == null || Model.Count == 0)
 {
@@ -107,8 +51,7 @@ else
 	{
 		<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
 			<div class="itemDataContainer">
-				@await Component.InvokeAsync("ItemIcon", item)
-				@await Component.InvokeAsync("ColoredText", item.ShortDescription)
+				@await Component.InvokeAsync("ItemReference", item)
 			</div>
 		</a>
 	}

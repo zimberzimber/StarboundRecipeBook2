@@ -23,7 +23,7 @@ namespace StarboundRecipeBook2.Services
         None = 0,
         Generic = 1,
         Object = 2,
-        consumable = 4,
+        Consumable = 4,
         ActiveItem = 8,
         All = 15
     }
@@ -99,7 +99,7 @@ namespace StarboundRecipeBook2.Services
                 .If(searchOptions.HasFlag(ItemSearchOptions.ActiveItem),
                     q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.activeItem)))
 
-                .If(searchOptions.HasFlag(ItemSearchOptions.consumable),
+                .If(searchOptions.HasFlag(ItemSearchOptions.Consumable),
                     q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.consumableItem)));
         }
 

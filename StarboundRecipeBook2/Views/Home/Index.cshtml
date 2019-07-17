@@ -1,36 +1,4 @@
 ﻿
-@model List<Item>
-	@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
+@{ ViewData["Title"] = "Home"; }
 
-	@{ ViewData["Title"] = "Home"; }
-
-	<form asp-controller="Items" asp-action="Index">
-		<div>
-			Filter items: <input type="text" name="itemSearch" />
-		</div>
-		<div>
-			generic: <input type="checkbox" name="generic" checked="checked" />
-		</div>
-		<div>
-			objects: <input type="checkbox" name="objects" checked="checked" />
-		</div>
-		<div>
-			activeItems: <input type="checkbox" name="activeItems" checked="checked" />
-		</div>
-		<div>
-			consumables: <input type="checkbox" name="consumables" checked="checked" />
-		</div>
-		<div>
-			<input type="submit" value="Filter" />
-		</div>
-	</form>
-
-	@foreach (var item in Model)
-	{
-	<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
-		<div class="itemDataContainer">
-			@await Component.InvokeAsync("ItemIcon", item)
-			@await Component.InvokeAsync("ColoredText", item.ShortDescription)
-		</div>
-	</a>
-	}
+Home page

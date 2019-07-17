@@ -33,16 +33,22 @@
 	</div>
 
 	<br />
-	@if (Model.Unlocks != null)
+	@if (Model.Unlocks != null && Model.Unlocks.Count > 0)
 	{
 		<div>
 			Unlocks recipes for
 			@foreach (var unlock in Model.Unlocks)
 			{
 				<div>
-					@await Component.InvokeAsync("ItemDisplayFromInternalName", unlock.UnlockedItemName)
+					@await Component.InvokeAsync("ItemReferenceFromInternalName", unlock.UnlockedItemName)
 				</div>
 			}
+		</div>
+	}
+	else
+	{
+		<div>
+			No recipes unlocked by this item.
 		</div>
 	}
 	<br />
@@ -63,7 +69,7 @@
 				<div>
 					@foreach (var input in recipe.RecipeInputs)
 					{
-						<div>@await Component.InvokeAsync("ItemDisplayFromInternalName", input.InputItemName) x @input.InputCount</div>
+						<div>@await Component.InvokeAsync("ItemReferenceFromInternalName", input.InputItemName) x @input.InputCount</div>
 					}
 				</div>
 			}

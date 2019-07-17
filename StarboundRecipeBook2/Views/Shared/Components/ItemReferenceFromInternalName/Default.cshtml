@@ -9,12 +9,7 @@
 		//Using an iterator because there may be a case of an item and an object with the same name but different otherwise.
 		foreach (var item in itemList)
 		{
-			<a class="ItemReferenceDisplayLink" asp-controller="Items" asp-action="Item" asp-route-itemId="@item.ItemId" asp-route-modId="@item.SourceModId">
-				<div class="ItemReferenceDisplay InlineBlockDiv">
-					@await Component.InvokeAsync("ItemIcon", item)
-					@await Component.InvokeAsync("ColoredText", item.ShortDescription)
-				</div>
-			</a>
+			@await Component.InvokeAsync("ItemReference", item)
 		}
 	}
 	else

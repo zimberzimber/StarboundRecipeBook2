@@ -1,0 +1,14 @@
+﻿@model Item
+
+<div class="itemIconContainer">
+	<img class="itemBorder" src=@String.Format("/images/item_border_{0}.png", Model.Rarity.ToString()) />
+	@if (Model.Icon == null)
+	{
+		<img class="itemIcon" src="~/images/assetmissing.png" alt="@Model.ShortDescription" />
+	}
+	else
+	{
+		string base64 = Convert.ToBase64String(Model.Icon);
+		<img class="itemIcon" src=@String.Format("data:image/png;base64,{0}", base64) alt="@Model.ShortDescription" />
+	}
+</div>

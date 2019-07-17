@@ -1,12 +1,58 @@
-﻿
-@{ ViewData["Title"] = "Items"; }
-@model List<Item>
+﻿@model List<Item>
+@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
 
-@foreach (var item in Model)
+@{ ViewData["Title"] = "Items"; }
+
+<script src="~/scripts/itemsPage.js"></script>
+
+<form id="searchForm">
+	<div>
+		Search by name: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
+	</div>
+</form>
+
+<table class="searchOptionsTable">
+	<tr class="searchOptionsTableTitle">
+		<th>Search Options</th>
+		<th>Item Types</th>
+	</tr>
+	<tr>
+		<th>
+			<input type="checkbox" id="partialNameMatch" onclick='filterCheckboxTick(this)' /> Match name partially
+			<br />
+			<input type="radio" id="searchByDisplayedName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Displayed Name</t>
+			<br />
+			<input type="radio" id="searchByInternalName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Internal Name</t>
+		</th>
+		<th>
+			<input type="checkbox" id="filterGeneric" onclick='filterCheckboxTick(this)' /> Generic items
+			<br />
+			<input type="checkbox" id="filterObjects" onclick='filterCheckboxTick(this)' /> Objects
+			<br />
+			<input type="checkbox" id="filterActiveItems" onclick='filterCheckboxTick(this)' /> Active items
+			<br />
+			<input type="checkbox" id="filterConsumables" onclick='filterCheckboxTick(this)' /> Consumeables
+		</th>
+	</tr>
+	<tr>
+		<th colspan="2">
+			<input type="submit" value="Search" form="searchForm" style="width:100%"/>
+		</th>
+	</tr>
+</table>
+
+@if (Model == null || Model.Count == 0)
 {
-	if (item.Icon != null)
+	<div>Nothing to display.</div>
+}
+else
+{
+	@foreach (var item in Model)
 	{
-		string base64 = Convert.ToBase64String(item.Icon);
-		<img src=@String.Format("data:image/jpg;base64,{0}", base64) />
+		<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
+			<div class="itemDataContainer">
+				@await Component.InvokeAsync("ItemReference", item)
+			</div>
+		</a>
 	}
 }

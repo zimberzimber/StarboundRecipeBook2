@@ -1,0 +1,21 @@
+﻿@model string
+@inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
+
+@{
+	var itemList = ItemRepo.GetItemsByInternalName(Model);
+
+	if (itemList.Count > 0)
+	{
+		//Using an iterator because there may be a case of an item and an object with the same name but different otherwise.
+		foreach (var item in itemList)
+		{
+			@await Component.InvokeAsync("ItemReference", item)
+		}
+	}
+	else
+	{
+		<div class="ItemReferenceDisplay InlineBlockDiv NonexistentItem">
+			@Model
+		</div>
+	}
+}

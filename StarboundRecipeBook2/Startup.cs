@@ -17,7 +17,8 @@ namespace WebApplication1
             { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework"); });
 
             services.AddTransient<IItemRepository, ItemRepository>();
-            services.AddTransient<ITextColorResolver, TextColorResolver>();
+            services.AddTransient<IRecipeRepository, RecipeRepository>();
+            services.AddTransient<ITextColorResolver, TextFormatResolver>();
             services.AddMvc();
         }
 

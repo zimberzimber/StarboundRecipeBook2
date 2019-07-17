@@ -104,6 +104,24 @@ namespace SBRB_DatabaseSeeder.Workers
                 int xIndex = 0;
                 int yIndex = 0;
                 bool found = false;
+
+                // If names are not defined, set their names to consequent numbers
+                if (frames.frameGrid.names == null)
+                {
+                    int frameCount = 0;
+
+                    frames.frameGrid.names = new string[frames.frameGrid.dimensions[1]][];
+                    for (int i = 0; i < frames.frameGrid.dimensions[1]; i++)
+                    {
+                        frames.frameGrid.names[i] = new string[frames.frameGrid.dimensions[0]];
+                        for (int j = 0; j < frames.frameGrid.dimensions[0]; j++)
+                        {
+                            frames.frameGrid.names[i][j] = frameCount.ToString();
+                            frameCount++;
+                        }
+                    }
+                }
+
                 for (; yIndex < frames.frameGrid.names.Length; yIndex++)
                 {
                     for (; xIndex < frames.frameGrid.names[yIndex].Length; xIndex++)

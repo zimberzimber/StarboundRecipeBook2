@@ -6,20 +6,18 @@ using StarboundRecipeBook2.Data;
 using StarboundRecipeBook2.Models;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 // NOTE:
 // Certain edge cases may be discovered and not resolved yet.
 // Look for them via Ctrl + F 'EDGE CASE' through the entire project
 
 // NOTE:
-// Certain to do's are located where the task needs to done.
-// Look for them via Ctrl + F 'TO DO' through the entire project
-
-// NOTE:
-// There may be scattared work in progress segments I may forget about in the future.
-// Look for them via Ctrl + F 'WIP' through the entire project
+// Raw queries seem to be faster. Should try using them when pulling data instead of throught EF core
 
 namespace SBRB_DatabaseSeeder
 {
@@ -27,57 +25,117 @@ namespace SBRB_DatabaseSeeder
     {
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
         public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
+
+        const string MOD_REMOVAL_QUERY = @"delete from Mods where SteamId = {0};
+delete from ActiveItemDatas where SourceModId = {0};
+delete from ConsumableDatas where SourceModId = {0};
+delete from Items where SourceModId = {0};
+delete from ObjectDatas where SourceModId = {0};
+delete from RecipeInputs where SourceModId = {0};
+delete from Recipes where SourceModId = {0};
+delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
+delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
+
+        static bool silent = false;
+        static FileStream logFile;
 
         static List<string> _itemFiles = new List<string>();
         static List<string> _recipeFiles = new List<string>();
         static List<DeserializedItem> _deserializedItems = new List<DeserializedItem>();
-        static List<DeserializedRecipe> _recipes = new List<DeserializedRecipe>();
+        static List<DeserializedRecipe> _deserializedRecipes = new List<DeserializedRecipe>();
 
-        static List<Item> _DBitems = new List<Item>();
+        static List<Item> _DBItems = new List<Item>();
         static List<ObjectData> _DBObjectDatas = new List<ObjectData>();
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
-        static List<ConsumeableData> _DBConsumeableDatas = new List<ConsumeableData>();
+        static List<consumableData> _DBconsumableDatas = new List<consumableData>();
+        static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
+        static List<Recipe> _DBRecipes = new List<Recipe>();
+        static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
+
+        static List<string> _warningMessages = new List<string>();
 
         static void Main()
         {
+            // Create a file to contain the logged messages
+            Directory.CreateDirectory("logs");
+            logFile = File.Create("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
+
             JSON.SetDefaultOptions(Options.ExcludeNulls);
 
             string metaString;
 
-            if (File.Exists($"{ modPath}\\.metadata"))
+            if (File.Exists($"{modPath}\\.metadata"))
                 metaString = File.ReadAllText($"{modPath}\\.metadata");
             else if (File.Exists($"{modPath}\\_metadata"))
                 metaString = File.ReadAllText($"{modPath}\\_metadata");
             else
             {
-                Console.WriteLine("No metadata file detected.");
+                Log("No metadata file detected.");
                 Console.ReadKey();
                 return;
             }
 
             Metadata meta = JSON.Deserialize<Metadata>(metaString);
 
-            if (string.IsNullOrEmpty(meta.steamContentId))
+            if (string.IsNullOrWhiteSpace(meta.steamContentId))
             {
-                Console.WriteLine("No Steam ID detected.");
-                Console.ReadKey();
-                return;
+                if (meta.author == "Chucklefish" && meta.name == "base")
+                {
+                    Log("Base game assets. ID is set to -1.");
+                    meta.steamContentId = "-1";
+                }
+                else
+                {
+                    Log("No Steam ID detected. Press any key to exit program.");
+                    Console.ReadKey();
+                    return;
+                }
             }
+            else
+                Log($"Accepted mod with Steam ID {meta.steamContentId}");
 
             _mod = meta.ToMod();
 
+            Log("----------------------------------------");
+            Log("Scanning and sorting mod files...");
+            Log();
             ScanFiles(modPath);
+
+            Log("----------------------------------------");
+            Log("Building item and recipe lists...");
+            Log();
             BuildItemList();
+            BuildRecipeList();
 
-            Console.WriteLine();
-            Console.WriteLine("\tItems Scanned:");
-            _deserializedItems.ForEach(i => Console.WriteLine($"{i.itemType.ToString()} - {i.itemName}"));
-            Console.WriteLine();
-
+            Log("----------------------------------------");
+            Log("Converting to DB models...");
+            Log();
             ConvertToDBItems();
+            ConvertToDBRecipes();
+
+            Log();
+            if (_warningMessages.Count > 0)
+            {
+                for (int i = 0; i < _warningMessages.Count; i++)
+                { Log(_warningMessages[i]); }
+
+                Log("Warnings present. Press any key to continue...");
+                Console.ReadKey();
+            }
+            else
+                Log("No warnings, proceeding...");
+
+            Log("----------------------------------------");
+            Log("Removing old mod records from database...");
+            Log();
+            RemoveModFromDB(_mod.SteamId);
+
+            Log("----------------------------------------");
+            Log("Adding new records to database...");
+            Log();
             AddToDatabase();
-            temp();
         }
 
         static void ScanFiles(string path)
@@ -98,46 +156,59 @@ namespace SBRB_DatabaseSeeder
 
             if (extension.Equals(".recipe"))
                 _recipeFiles.Add(file);
-            else if (extension.Equals(".item") || extension.Equals(".object") || extension.Equals(".activeitem") || extension.Equals(".consumeable"))
+            else if (extension.Equals(".item") || extension.Equals(".object") || extension.Equals(".activeitem") || extension.Equals(".consumable"))
                 _itemFiles.Add(file);
-
-            if (Path.GetExtension(file) == ".recipe")
-            {
-                //var x = JSON.Deserialize<DeserializedRecipe>(File.ReadAllText(file).RemoveComments());
-            }
         }
 
         static void BuildItemList()
         {
             for (int i = 0; i < _itemFiles.Count; i++)
             {
-                DeserializedItem item;
+                Log($"Deserializing file '{_itemFiles[i]}'");
+
+                DeserializedItem item = null;
                 string json = File.ReadAllText(_itemFiles[i]).RemoveComments();
 
                 switch (Path.GetExtension(_itemFiles[i]))
                 {
                     case ".item":
                         item = JSON.Deserialize<DeserializedItem>(json);
-                        item.itemType = DeserializedItem.ItemType.Generic;
+                        item.itemType = DeserializedItem.ItemTypes.Generic;
                         break;
                     case ".object":
                         item = JSON.Deserialize<DeserializedObject>(json);
-                        item.itemType = DeserializedItem.ItemType.Object;
+                        item.itemType = DeserializedItem.ItemTypes.Object;
                         break;
-                    case ".consumeable":
-                        item = JSON.Deserialize<DeserializedConsumeable>(json);
-                        item.itemType = DeserializedItem.ItemType.Consumeable;
+                    case ".consumable":
+                        item = JSON.Deserialize<DeserializedConsumable>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Consumable;
                         break;
                     case ".activeitem":
                         item = JSON.Deserialize<DeserializedActiveItem>(json);
-                        item.itemType = DeserializedItem.ItemType.ActiveItem;
+                        item.itemType = DeserializedItem.ItemTypes.ActiveItem;
                         break;
                     default:
-                        throw new Exception($"Not an item extension file received from '{_deserializedItems[i]}'");
+                        AddWarning($"Not an item extension file received from '{_deserializedItems[i]}'");
+                        break;
                 }
 
-                item.filePath = _itemFiles[i];
-                _deserializedItems.Add(item);
+                if (item != null)
+                {
+                    item.filePath = _itemFiles[i];
+                    _deserializedItems.Add(item);
+                }
+            }
+        }
+
+        static void BuildRecipeList()
+        {
+            for (int i = 0; i < _recipeFiles.Count; i++)
+            {
+                string json = File.ReadAllText(_recipeFiles[i]).RemoveComments();
+                DeserializedRecipe recipe = JSON.Deserialize<DeserializedRecipe>(json);
+                recipe.filePath = _recipeFiles[i];
+
+                _deserializedRecipes.Add(recipe);
             }
         }
 
@@ -145,26 +216,31 @@ namespace SBRB_DatabaseSeeder
         {
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
-                var dItem = _deserializedItems[i];
+                DeserializedItem dItem = _deserializedItems[i];
+                Log($"Working on '{dItem.itemName}'...");
 
                 Item item = new Item
                 {
+                    SourceModId = _mod.SteamId,
                     ItemId = i,
-                    InternalName = dItem.itemName,
                     ShortDescription = dItem.shortdescription,
-                    Description = dItem.shortdescription,
+                    Description = dItem.description,
                     Icon = dItem.GenerateIconImage(),
                     Price = dItem.price,
                     MaxStack = dItem.maxStack,
                     ExtraData = "",
-                    FilePath = dItem.filePath,
                     Type = dItem.filePath.FilePathToItemTypeEnum(),
                     Category = dItem.category?.ToLower(),
                     Rarity = (Item.Rarities)Enum.Parse(typeof(Item.Rarities), dItem.rarity.ToLower()),
-
-                    SourceModId = _mod.SteamId,
                 };
-                _DBitems.Add(item);
+
+                if (!dItem.SBRBhidden)
+                {
+                    item.InternalName = dItem.itemName;
+                    item.FilePath = dItem.filePath.ToReletivePath(modPath);
+                }
+
+                _DBItems.Add(item);
 
                 if (dItem is DeserializedActiveItem dActiveItem)
                 {
@@ -180,18 +256,18 @@ namespace SBRB_DatabaseSeeder
                     item.ActiveItemDataId = activeItem.ActiveItemDataId;
                     _DBActiveItemDatas.Add(activeItem);
                 }
-                else if (dItem is DeserializedConsumeable dConsumeable)
+                else if (dItem is DeserializedConsumable dconsumable)
                 {
-                    var consumeableItem = new ConsumeableData
+                    var consumableItem = new consumableData
                     {
                         SourceModId = _mod.SteamId,
                         ItemId = item.ItemId,
-                        ConsumeableDataId = _DBConsumeableDatas.Count,
-                        FoodValue = dConsumeable.foodValue,
+                        consumableDataId = _DBconsumableDatas.Count,
+                        FoodValue = dconsumable.foodValue,
                     };
 
-                    item.ConsumeableDataId = consumeableItem.ConsumeableDataId;
-                    _DBConsumeableDatas.Add(consumeableItem);
+                    item.consumableDataId = consumableItem.consumableDataId;
+                    _DBconsumableDatas.Add(consumableItem);
                 }
                 else if (dItem is DeserializedObject dObject)
                 {
@@ -208,6 +284,61 @@ namespace SBRB_DatabaseSeeder
                     item.ObjectDataId = objectItem.ObjectDataId;
                     _DBObjectDatas.Add(objectItem);
                 }
+
+                if (dItem.learnBlueprintsOnPickup != null)
+                {
+                    for (int j = 0; j < dItem.learnBlueprintsOnPickup.Length; j++)
+                    {
+                        string unlockedItemName = dItem.learnBlueprintsOnPickup[j];
+                        if (_DBRecipeUnlocks.FirstOrDefault(u => u.UnlockedItemName == unlockedItemName &&
+                                                                 u.UnlockingItemId == i &&
+                                                                 u.UnlockingItemSourceModId == _mod.SteamId) != null)
+                        {
+                            AddWarning($"Duplicate unlock for '{unlockedItemName}' from '{dItem.itemName}' not added.\n\tItem path: '{dItem.filePath}'");
+                        }
+                        else
+                        {
+                            _DBRecipeUnlocks.Add(new RecipeUnlock
+                            {
+                                UnlockedItemName = unlockedItemName,
+                                UnlockingItemId = i,
+                                UnlockingItemSourceModId = _mod.SteamId
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        static void ConvertToDBRecipes()
+        {
+            int recipeCount = 0;
+
+            for (int i = 0; i < _deserializedRecipes.Count; i++)
+            {
+                DeserializedRecipe dRecipe = _deserializedRecipes[i];
+
+                _DBRecipes.Add(new Recipe
+                {
+                    FilePath = dRecipe.filePath.ToReletivePath(modPath),
+                    OutputCount = dRecipe.output.count,
+                    OutputItemName = dRecipe.output.item,
+                    SourceModId = _mod.SteamId,
+                    RecipeId = i,
+                });
+
+                for (int j = 0; j < dRecipe.input.Length; j++)
+                {
+                    _DBRecipeInputs.Add(new RecipeInput
+                    {
+                        InputCount = dRecipe.input[j].count,
+                        InputItemName = dRecipe.input[j].item,
+                        RecipeId = i,
+                        SourceModId = _mod.SteamId,
+                        RecipeInputId = recipeCount
+                    });
+                    recipeCount++;
+                }
             }
         }
 
@@ -215,12 +346,12 @@ namespace SBRB_DatabaseSeeder
         {
             using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
             {
-                db.Database.EnsureDeleted();
+                //db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
 
                 db.Mods.Add(_mod);
 
-                foreach (var item in _DBitems)
+                foreach (var item in _DBItems)
                 { db.Items.Add(item); }
 
                 foreach (var item in _DBActiveItemDatas)
@@ -229,23 +360,56 @@ namespace SBRB_DatabaseSeeder
                 foreach (var item in _DBObjectDatas)
                 { db.ObjectDatas.Add(item); }
 
-                foreach (var item in _DBConsumeableDatas)
-                { db.ConsumeableDatas.Add(item); }
+                foreach (var item in _DBconsumableDatas)
+                { db.ConsumableDatas.Add(item); }
+
+                foreach (var item in _DBRecipeUnlocks)
+                { db.RecipeUnlocks.Add(item); }
+
+                foreach (var item in _DBRecipes)
+                { db.Recipes.Add(item); }
+
+                foreach (var item in _DBRecipeInputs)
+                { db.RecipeInputs.Add(item); }
 
                 var count = db.SaveChanges();
-                Console.WriteLine("{0} records saved to database", count);
+                Log("{0} records saved to database", count);
             }
         }
 
-        static void temp()
+        static void RemoveModFromDB(int modId)
         {
-            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
+            using (SqlConnection connection = new SqlConnection(DatabaseContext.CONNECTION_STRING))
+            using (SqlCommand command = new SqlCommand(string.Format(MOD_REMOVAL_QUERY, modId), connection))
             {
-                List<Mod> mods = db.Mods.Include(m => m.AddedItems).ToList();
-                List<Item> items = db.Items.Include(i => i.ActiveItemData).Include(i => i.ConsumeableData).Include(i => i.ObjectData).ToList();
-                List<Item> items2 = db.Items.Where(r => r.Rarity.ToString() == "common").ToList();
-                var breakpoint = 5;
+                connection.Open();
+                using (SqlDataReader reader = command.ExecuteReader())
+                    while (reader.Read()) { };
+                connection.Close();
             }
         }
+
+
+        static void Log(string message)
+        {
+            WriteToFile(message);
+            if (!silent)
+                Console.WriteLine(message);
+        }
+
+        static void Log()
+            => Log("\n");
+
+        static void Log(string message, params object[] args)
+            => Log(string.Format(message, args));
+
+        static void WriteToFile(string message)
+        {
+            byte[] buffer = new UTF8Encoding(true).GetBytes($"\n{message}");
+            logFile.Write(buffer, 0, buffer.Length);
+        }
+
+        static void AddWarning(string warning)
+              => _warningMessages.Add($"WARNING - {warning}");
     }
 }

@@ -9,21 +9,22 @@ namespace StarboundRecipeBook2.Data
     {
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
 
+        public const string CONNECTION_STRING = "Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework";
+
         // Tables
         public virtual DbSet<Mod> Mods { get; set; }
         public virtual DbSet<Item> Items { get; set; }
         public virtual DbSet<ActiveItemData> ActiveItemDatas { get; set; }
-        public virtual DbSet<ConsumeableData> ConsumeableDatas { get; set; }
+        public virtual DbSet<consumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
+        public virtual DbSet<RecipeUnlock> RecipeUnlocks { get; set; }
 
         // Relationships 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework");
-        }
+        { optionsBuilder.UseSqlServer(CONNECTION_STRING); }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,7 +34,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Mod>().HasKey(m => m.SteamId);
             builder.Entity<Item>().HasKey(i => new { i.SourceModId, i.ItemId });
 
-            builder.Entity<ConsumeableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumeableDataId });
+            builder.Entity<consumableData>().HasKey(cd => new { cd.SourceModId, cd.consumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
             builder.Entity<ObjectData>().HasKey(od => new { od.SourceModId, od.ObjectDataId });
 
@@ -42,7 +43,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<RecipeGroup>().HasKey(rg => rg.RecipeGroupName);
 
             builder.Entity<Relationship_Recipe_RecipeGroup>().HasKey(rrr => new { rrr.SourceModId, rrr.RecipeId, rrr.RecipeGroupName });
-            builder.Entity<Relationship_Item_Item>().HasKey(rii => new { rii.UnlockingItemId, rii.UnlockedItemId });
+            builder.Entity<RecipeUnlock>().HasKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId, ru.UnlockedItemName });
 
             // Item Relationships
             {
@@ -50,44 +51,34 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(item => item.SourceMod)
                     .WithMany(mod => mod.AddedItems)
                     .HasForeignKey(item => item.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
-                    .HasOne(rii => rii.UnlockingItem)
-                    .WithMany(item => item.Unlocks)
-                    .HasForeignKey(rii => new { rii.UnlockingItemSourceModId, rii.UnlockingItemId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                builder.Entity<Item>() // Item - RecipeUnlock (M : 1)
+                    .HasMany(item => item.Unlocks)
+                    .WithOne(ru => ru.UnlockingItem)
+                    .HasForeignKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId })
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Relationship_Item_Item>() // UnlockingItem - UnlockedItem (M : M)
-                    .HasOne(rii => rii.UnlockedItem)
-                    .WithMany(item => item.UnlockedBy)
-                    .HasForeignKey(rii => new { rii.UnlockedItemSourceModId, rii.UnlockedItemId })
-                    .OnDelete(DeleteBehavior.Restrict);
-            }
-
-            // Item to ObjectData/ConsumeableData/ActiveItemData
-            {
-
-                builder.Entity<Item>()
+                builder.Entity<Item>() // Item - Object Data (1 : 1)
                     .HasOne(item => item.ObjectData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ObjectDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Item>()
+                builder.Entity<Item>() // Item - Active Item Data (1 : 1)
                     .HasOne(item => item.ActiveItemData)
                     .WithOne(obj => obj.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ActiveItemDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Item>()
-                    .HasOne(item => item.ConsumeableData)
+                builder.Entity<Item>() // Item - consumable Data (1 : 1)
+                    .HasOne(item => item.consumableData)
                     .WithOne(obj => obj.Item)
-                    .HasForeignKey<Item>(item => new { item.SourceModId, item.ConsumeableDataId })
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.consumableDataId })
                     .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
             }
 
             // Recipe Relationships
@@ -96,27 +87,26 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(recipe => recipe.SourceMod)
                     .WithMany(mod => mod.AddedRecipes)
                     .HasForeignKey(recipe => recipe.SourceModId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Recipe>() // Recipe - RecipeInput (M : 1)
                     .HasMany(recipe => recipe.RecipeInputs)
                     .WithOne(recipeInput => recipeInput.Recipe)
-                    .HasForeignKey(recipeInput => new { recipeInput.SourceModId, recipeInput.RecipeInputId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasForeignKey(recipeInput => new { recipeInput.SourceModId, recipeInput.RecipeId })
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Relationship_Recipe_RecipeGroup>() // Recipe - RecipeGroups (M : M)
                     .HasOne(rrr => rrr.Recipe)
                     .WithMany(recipe => recipe.RecipeGroups)
                     .HasForeignKey(rrr => new { rrr.SourceModId, rrr.RecipeId })
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 builder.Entity<Relationship_Recipe_RecipeGroup>() // Recipe - RecipeGroups (M : M)
                     .HasOne(rrr => rrr.RecipeGroup)
                     .WithMany(recipeGroups => recipeGroups.Recipes)
                     .HasForeignKey(rrr => rrr.RecipeGroupName)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Cascade);
             }
-
         }
     }
 }

@@ -2,11 +2,11 @@
 
 namespace StarboundRecipeBook2.Models
 {
-    public class ConsumeableData
+    public class consumableData
     {
         public int SourceModId { get; set; } // PPK + FK
-        public int ConsumeableDataId { get; set; } // PPK
-        public int FoodValue { get; set; }
+        public int consumableDataId { get; set; } // PPK
+        public double FoodValue { get; set; }
 
         public int ItemId { get; set; } // FK
         public virtual Item Item { get; set; }

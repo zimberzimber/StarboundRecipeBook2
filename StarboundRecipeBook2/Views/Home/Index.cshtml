@@ -1,22 +1,4 @@
 ﻿
 @{ ViewData["Title"] = "Home"; }
-@model List<Item>
-@inject StarboundRecipeBook2.Services.ITextColorResolver ColorResolver
 
-@foreach (var item in Model)
-{
-	<div class="itemDataContainer">
-		<span class="itemIconContainer">
-			@if (item.Icon == null)
-			{
-				<img src="~/images/assetmissing.png" alt="assetmissing.png" />
-			}
-			else
-			{
-				string base64 = Convert.ToBase64String(item.Icon);
-				<img src=@String.Format("data:image/png;base64,{0}", base64) alt=@item.ShortDescription />
-			}
-		</span>
-		@Html.Raw(@ColorResolver.ResolveColor(item.ShortDescription))
-	</div>
-}
+Home page

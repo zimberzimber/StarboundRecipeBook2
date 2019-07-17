@@ -23,8 +23,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
 
@@ -49,7 +49,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<Item> _DBItems = new List<Item>();
         static List<ObjectData> _DBObjectDatas = new List<ObjectData>();
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
-        static List<consumableData> _DBconsumableDatas = new List<consumableData>();
+        static List<ConsumableData> _DBconsumableDatas = new List<ConsumableData>();
         static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
         static List<Recipe> _DBRecipes = new List<Recipe>();
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
@@ -258,15 +258,15 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 }
                 else if (dItem is DeserializedConsumable dconsumable)
                 {
-                    var consumableItem = new consumableData
+                    var consumableItem = new ConsumableData
                     {
                         SourceModId = _mod.SteamId,
                         ItemId = item.ItemId,
-                        consumableDataId = _DBconsumableDatas.Count,
+                        ConsumableDataId = _DBconsumableDatas.Count,
                         FoodValue = dconsumable.foodValue,
                     };
 
-                    item.consumableDataId = consumableItem.consumableDataId;
+                    item.ConsumableDataId = consumableItem.ConsumableDataId;
                     _DBconsumableDatas.Add(consumableItem);
                 }
                 else if (dItem is DeserializedObject dObject)

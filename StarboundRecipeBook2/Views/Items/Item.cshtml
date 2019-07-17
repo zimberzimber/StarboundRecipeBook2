@@ -1,14 +1,19 @@
 ﻿
-@{ ViewData["Title"] = "ViewItem"; }
-
 @model Item
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 @inject StarboundRecipeBook2.Services.IRecipeRepository RecipeRepo
+@inject StarboundRecipeBook2.Services.IModRepository ModRepo
+
+@{ ViewData["Title"] = Model.ShortDescription.RemoveFormatting(); }
 
 <div class="itemDataContainer">
 	<div>
 		@await Component.InvokeAsync("ItemIcon", Model)
 		@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
+	</div>
+
+	<div>
+		Source mod: @Model.SourceMod.FriendlyName
 	</div>
 
 	@if (@Model.InternalName == null)

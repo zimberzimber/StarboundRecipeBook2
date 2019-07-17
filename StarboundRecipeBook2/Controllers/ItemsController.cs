@@ -10,22 +10,7 @@ namespace StarboundRecipeBook2.Controllers
         IItemRepository _itemRepo;
 
         public ItemsController(IItemRepository itemRepo)
-        {
-            _itemRepo = itemRepo;
-
-            // Set default search options
-            //bool? generic = Request.Cookies["filterGeneric"]?.ToBool();
-            //bool? objects = Request.Cookies["filterObjects"]?.ToBool();
-            //bool? activeItems = Request.Cookies["filterActiveItems"]?.ToBool();
-            //bool? consumables = Request.Cookies["filterConsumables"]?.ToBool();
-            //bool? partialNameMatch = Request.Cookies["partialNameMatch"]?.ToBool();
-
-            //if (generic == null) Response.Cookies.Append("filterGeneric", "true");
-            //if (objects == null) Response.Cookies.Append("filterObjects", "true");
-            //if (activeItems == null) Response.Cookies.Append("filterActiveItems", "true");
-            //if (consumables == null) Response.Cookies.Append("filterConsumables", "true");
-            //if (partialNameMatch == null) Response.Cookies.Append("partialNameMatch", "true");
-        }
+        {            _itemRepo = itemRepo;        }
 
         public IActionResult Index()
         {
@@ -37,9 +22,6 @@ namespace StarboundRecipeBook2.Controllers
             bool? consumables = Request.Cookies["filterConsumables"].ToBool();
             bool? partialNameMatch = Request.Cookies["partialNameMatch"].ToBool();
             string searchBySelected = Request.Cookies["searchBy"];
-
-            // searchByInternalName
-            // searchByDisplayedName
 
             bool hasItemSearch = HttpContext.Request.Query.TryGetValue("itemSearch", out var itemSearch);
 
@@ -79,7 +61,7 @@ namespace StarboundRecipeBook2.Controllers
 
         public IActionResult Item(int modId, int itemId)
         {
-            var item = _itemRepo.GetItemByIds(itemId, modId, ItemIncludeOptions.Unlocks);
+            var item = _itemRepo.GetItemByIds(itemId, modId, ItemIncludeOptions.All);
             if (item == default)
                 return RedirectToAction("Index", "Home");
             return View(item);

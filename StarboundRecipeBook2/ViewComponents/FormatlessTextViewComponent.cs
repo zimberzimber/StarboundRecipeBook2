@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace StarboundRecipeBook2.ViewComponents
 {
-    public class ColoredTextViewComponent : ViewComponent
+    public class FormatlessTextViewComponent : ViewComponent
     {
         public Task<IViewComponentResult> InvokeAsync(string raw)
-            => Task.FromResult<IViewComponentResult>(View("Default", raw.ResolveColor()));
+            => Task.FromResult<IViewComponentResult>(View("Default", raw.RemoveFormatting()));
     }
 }

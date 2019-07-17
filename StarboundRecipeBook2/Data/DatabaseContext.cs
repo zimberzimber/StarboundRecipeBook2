@@ -15,7 +15,7 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<Mod> Mods { get; set; }
         public virtual DbSet<Item> Items { get; set; }
         public virtual DbSet<ActiveItemData> ActiveItemDatas { get; set; }
-        public virtual DbSet<consumableData> ConsumableDatas { get; set; }
+        public virtual DbSet<ConsumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
@@ -34,7 +34,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Mod>().HasKey(m => m.SteamId);
             builder.Entity<Item>().HasKey(i => new { i.SourceModId, i.ItemId });
 
-            builder.Entity<consumableData>().HasKey(cd => new { cd.SourceModId, cd.consumableDataId });
+            builder.Entity<ConsumableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
             builder.Entity<ObjectData>().HasKey(od => new { od.SourceModId, od.ObjectDataId });
 
@@ -76,7 +76,7 @@ namespace StarboundRecipeBook2.Data
                 builder.Entity<Item>() // Item - consumable Data (1 : 1)
                     .HasOne(item => item.consumableData)
                     .WithOne(obj => obj.Item)
-                    .HasForeignKey<Item>(item => new { item.SourceModId, item.consumableDataId })
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.ConsumableDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
             }

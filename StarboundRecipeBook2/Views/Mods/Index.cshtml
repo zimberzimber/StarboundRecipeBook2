@@ -1,0 +1,69 @@
+﻿
+@{ ViewData["Title"] = "Mods"; }
+@model List<Mod>
+
+
+@if (Model == null || Model.Count == 0)
+{
+	<div>No mods...</div>
+}
+else
+{
+	<table class="ModsTable">
+		<tr class="TableTitle">
+			<td>
+				Friendly Name
+			</td>
+			<td>
+				Steam ID
+			</td>
+			<td>
+				Author
+			</td>
+			<td>
+				Internal Name
+			</td>
+			<td>
+				Version
+			</td>
+			<td>
+				Last Updated
+			</td>
+			<td>
+				Items Added
+			</td>
+			<td>
+				Recipes Added
+			</td>
+		</tr>
+		@foreach (var mod in Model)
+		{
+			<tr>
+				<td>
+					@mod.FriendlyName
+				</td>
+				<td>
+					@mod.SteamId
+				</td>
+				<td>
+					@mod.Author
+				</td>
+				<td>
+					@mod.InternalName
+				</td>
+				<td>
+					@mod.Version
+				</td>
+				<td>
+					@mod.LastUpdated.ToString("yyyy.MM.dd")
+				</td>
+				<td>
+					@mod.AddedItems?.Count
+				</td>
+				<td>
+					@mod.AddedRecipes?.Count
+				</td>
+			</tr>
+		}
+	</table>
+}

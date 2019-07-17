@@ -24,12 +24,12 @@ namespace StarboundRecipeBook2.Models
         public int SourceModId { get; set; } // PPK + FK
         public int? ObjectDataId { get; set; }
         public int? ActiveItemDataId { get; set; }
-        public int? consumableDataId { get; set; }
+        public int? ConsumableDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual ObjectData ObjectData { get; set; }
         public virtual ActiveItemData ActiveItemData { get; set; }
-        public virtual consumableData consumableData { get; set; }
+        public virtual ConsumableData consumableData { get; set; }
 
         public virtual ICollection<RecipeUnlock> Unlocks { get; set; }
     }

@@ -2,7 +2,6 @@
 @model Item
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 @inject StarboundRecipeBook2.Services.IRecipeRepository RecipeRepo
-@inject StarboundRecipeBook2.Services.IModRepository ModRepo
 
 @{ ViewData["Title"] = Model.ShortDescription.RemoveFormatting(); }
 
@@ -13,7 +12,7 @@
 	</div>
 
 	<div>
-		Source mod: @Model.SourceMod.FriendlyName
+		Source mod: @await Component.InvokeAsync("ModSteamLink", Model.SourceModId)
 	</div>
 
 	@if (@Model.InternalName == null)

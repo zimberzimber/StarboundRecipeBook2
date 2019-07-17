@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace StarboundRecipeBook2.ViewComponents
 {
-    public class ItemReference : ViewComponent
+    public class ItemReferenceViewComponent : ViewComponent
     {
         public Task<IViewComponentResult> InvokeAsync(Item item)
             => Task.FromResult<IViewComponentResult>(View("Default", item));

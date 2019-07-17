@@ -40,7 +40,7 @@ else
 		{
 			<tr>
 				<td>
-					@mod.FriendlyName
+					@await Component.InvokeAsync("ModSteamLink", mod.SteamId)
 				</td>
 				<td>
 					@mod.SteamId

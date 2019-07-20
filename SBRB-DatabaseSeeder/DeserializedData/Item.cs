@@ -3,6 +3,7 @@ using SBRB_DatabaseSeeder.Workers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
+using static StarboundRecipeBook2.Models.ArmorData;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
@@ -15,7 +16,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             public string image { get; set; }
         }
 
-        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor };
+        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor, Beamaxe, Flashlight, Miningtool };
 
         public string itemName { get; set; }
         public string shortdescription { get; set; }
@@ -32,7 +33,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public ItemTypes itemType { get; set; }
         public string filePath { get; set; }
 
-        public byte[] GenerateIconImage()
+        public byte[] GenerateIconImage(ArmorType? armorType = null)
         {
             // Create the initial image, with 1x1 marking it as uninitialized.
             // Because I highly doubt anyone is going to use a smaller image.
@@ -63,7 +64,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                     for (int i = 0; i < componentsJSON.Length; i++)
                     {
                         var component = JSON.Deserialize<CompositeIconComponent>(componentsJSON[i]);
-                        fullImage.AddLayer(component.image, filePath);
+                        fullImage.AddLayer(component.image, filePath, armorType);
                     }
                 }
 
@@ -71,7 +72,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                 else
                 {
                     string path = inventoryIcon.ToString().Replace("\"", string.Empty);
-                    fullImage.AddLayer(path, filePath);
+                    fullImage.AddLayer(path, filePath, armorType);
                 }
 
                 // If the dimensions remained 1x1, the image failed to generate, and is empty.
@@ -118,5 +119,30 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     class DeserializedArmor : DeserializedItem
     {
         public double level { get; set; }
+        public ArmorType armorType { get; set; }
+    }
+
+    class DeserializedFlashlight : DeserializedItem
+    {
+        public int[] lightColor { get; set; }
+        public double beamLevel { get; set; }
+        public double beamAmbience { get; set; }
+    }
+
+    class DeserializedMiningtool : DeserializedItem
+    {
+        public int blockRadius { get; set; }
+        public double durability { get; set; }
+        public double durabilityPerUse { get; set; }
+        public bool twoHanded { get; set; }
+        public double fireTime { get; set; }
+    }
+
+    class DeserializedBeamaxe : DeserializedItem
+    {
+        public double fireTime { get; set; }
+        public double blockRadius { get; set; }
+        public double tileDamage { get; set; }
+        public double rangeBonus { get; set; }
     }
 }

@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StarboundRecipeBook2", "StarboundRecipeBook2\StarboundRecipeBook2.csproj", "{98C020BE-B8B5-4953-AA1E-5EE80AE32DD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SBRB-Database", "SBRB-Database\SBRB-Database.csproj", "{6641E2E0-CFCD-4FDB-9C20-C5915358839E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SBRB-DatabaseSeeder", "SBRB-DatabaseSeeder\SBRB-DatabaseSeeder.csproj", "{9A36C9FB-1E72-43CE-83A5-9026B45DF835}"
 EndProject
 Global
@@ -19,10 +17,6 @@ Global
 		{98C020BE-B8B5-4953-AA1E-5EE80AE32DD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98C020BE-B8B5-4953-AA1E-5EE80AE32DD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98C020BE-B8B5-4953-AA1E-5EE80AE32DD2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6641E2E0-CFCD-4FDB-9C20-C5915358839E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6641E2E0-CFCD-4FDB-9C20-C5915358839E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6641E2E0-CFCD-4FDB-9C20-C5915358839E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6641E2E0-CFCD-4FDB-9C20-C5915358839E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9A36C9FB-1E72-43CE-83A5-9026B45DF835}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9A36C9FB-1E72-43CE-83A5-9026B45DF835}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A36C9FB-1E72-43CE-83A5-9026B45DF835}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -16,6 +16,9 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<ConsumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
         public virtual DbSet<ArmorData> ArmorDatas { get; set; }
+        public virtual DbSet<BeamaxeData> BeamaxeDatas { get; set; }
+        public virtual DbSet<MiningtoolData> MiningToolDatas { get; set; }
+        public virtual DbSet<FlashlightData> FlashlightDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
@@ -37,6 +40,9 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<ArmorData>().HasKey(ad => new { ad.SourceModId, ad.ArmorDataId });
             builder.Entity<ConsumableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
+            builder.Entity<BeamaxeData>().HasKey(aid => new { aid.SourceModId, aid.BeamaxeDataID });
+            builder.Entity<FlashlightData>().HasKey(aid => new { aid.SourceModId, aid.FlashlightDataID });
+            builder.Entity<MiningtoolData>().HasKey(aid => new { aid.SourceModId, aid.MiningtoolDataID });
 
             builder.Entity<Recipe>().HasKey(r => new { r.SourceModId, r.RecipeId });
             builder.Entity<RecipeInput>().HasKey(ri => new { ri.SourceModId, ri.RecipeInputId });
@@ -84,6 +90,29 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(item => item.ArmorData)
                     .WithOne(armor => armor.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ArmorDataId })
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+
+
+                builder.Entity<Item>() // Item - Armor Data (1 : 1)
+                    .HasOne(item => item.BeamaxeData)
+                    .WithOne(beamaxe => beamaxe.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.BeamaxeDataId })
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                builder.Entity<Item>() // Item - Armor Data (1 : 1)
+                    .HasOne(item => item.FlashlightData)
+                    .WithOne(flashlight => flashlight.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.FlashlightDataId })
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                builder.Entity<Item>() // Item - Armor Data (1 : 1)
+                    .HasOne(item => item.MiningtoolData)
+                    .WithOne(miningTool => miningTool.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.MiningtoolDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
             }

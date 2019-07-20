@@ -4,17 +4,23 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using static StarboundRecipeBook2.Models.ArmorData;
 
 namespace SBRB_DatabaseSeeder.Workers
 {
-    /// <summary>
-    /// Class housing an extension for layering an image over a subject, following Starbounds formats/methods.
-    /// </summary>
+    /// <summary>Class housing an extension for layering an image over a subject, following Starbounds formats/methods.</summary>
     // Or at least what I think they are...
     static class ImageBuilder
     {
+        static readonly Dictionary<ArmorType, int[]> ARMOR_FRAME_COORDS = new Dictionary<ArmorType, int[]>
+        {
+            {ArmorType.Head, new int[]{ 0, 0, 16, 16} },
+            {ArmorType.Chest, new int[]{ 16, 0, 32, 16} },
+            {ArmorType.Legs, new int[]{ 32, 0, 48, 16} },
+            {ArmorType.Back, new int[]{ 48, 0, 64, 16} }
+        };
+
         // These nested classes are used in .frames file deserialization.
         // Nested because they're not used anywhere else
         class FramesFile
@@ -41,7 +47,7 @@ namespace SBRB_DatabaseSeeder.Workers
 
         // Because try/catch is heavier than a simple enum check.
         /// <summary>Enum responsible for indicating the result of attempting to add a layer through the 'AddLayer' method.</summary>
-        public enum AddLayerResult { Done, ImageFileNotfound, FramesFileNotFound, FrameNotFound }
+        public enum AddLayerResult { Done, ImageFileNotfound, FramesFileNotFound, FrameNotFound, ErronousFramesFile }
 
         /// <summary>
         /// Method used to add a layer to the subject 'Image'. Can use an absolute path by not passing an 'itemFilePath'
@@ -50,7 +56,7 @@ namespace SBRB_DatabaseSeeder.Workers
         /// <param name="imagePath">Path to image</param>
         /// <param name="itemFilePath">Path to the file using the image</param>
         /// <returns>Returns true if the image was added successfully. False otherwise.</returns>
-        public static AddLayerResult AddLayer(this Image<Rgba32> fullImage, string imagePath, string itemFilePath)
+        public static AddLayerResult AddLayer(this Image<Rgba32> fullImage, string imagePath, string itemFilePath, ArmorType? armorType)
         {
             // Check if the path is from the same directory, or from the mods root
             if (imagePath.StartsWith('/'))
@@ -77,106 +83,159 @@ namespace SBRB_DatabaseSeeder.Workers
                 frame = splitPath[2];
             }
 
-            // Image file not found - Return false, indicating the addition was unsuccessful.
+            // Image file not found
             if (!File.Exists(imagePath))
                 return AddLayerResult.ImageFileNotfound;
 
-            // If a specific frame is used, find the frames file.
-            // EDGE CASE : the frames file may be defined in a different mod
-            if (frame != null)
+            bool useFull = false;
+            int xOffset = 0;
+            int yOffset = 0;
+            int width = 0;
+            int height = 0;
+
+            if (frame == null)
             {
-                // Look for a file with the same name as the given 'imagePath', but has '.frames' added to it after its original extension
+                // If the path doesn't point to a frame
+                if (armorType == null)
+                {
+                    // If its a non-armor item
+                    useFull = true;
+                }
+                else
+                {
+                    // If its an armor item, use the default armor icon assignment method
+                    int[] frameCoords = ARMOR_FRAME_COORDS[armorType.Value];
+                    xOffset = frameCoords[0];
+                    yOffset = frameCoords[1];
+                    width = frameCoords[2] - frameCoords[0];
+                    height = frameCoords[3] - frameCoords[1];
+                }
+            }
+            else
+            {
+                // If the path points to a frame
                 string framesPath = $"{Path.GetDirectoryName(imagePath)}\\{Path.GetFileNameWithoutExtension(imagePath)}.frames";
 
-                // If that doesn't exist, look for a file named 'default.frames' in the same directory
+                // If the frames file was not found, look for the default.frames file
                 if (!File.Exists(framesPath))
                     framesPath = $"{Path.GetDirectoryName(imagePath)}\\default.frames";
 
-                // Frames file not found - Return false, indicating the addition was unsuccessful.
-                if (!File.Exists(framesPath))
-                    return AddLayerResult.FramesFileNotFound;
-
-                // Deserialize the .frames files
-                FramesFile frames = JSON.Deserialize<FramesFile>(File.ReadAllText(framesPath));
-
-                // The frame we're looking for might be an alias. Check if it is, and replace it with the original frame name.
-                if (frames.aliases != null && frames.aliases.ContainsKey(frame))
-                    frame = frames.aliases[frame];
-
-                // Find the frame we're looking for
-                int xIndex = 0;
-                int yIndex = 0;
-                bool found = false;
-
-                // If names are not defined, set their names to consequent numbers
-                if (frames.frameGrid.names == null)
+                if (File.Exists(framesPath))
                 {
-                    int frameCount = 0;
+                    // If it was found...
+                    // Deserialize the .frames files
+                    FramesFile frames = JSON.Deserialize<FramesFile>(File.ReadAllText(framesPath));
 
-                    frames.frameGrid.names = new string[frames.frameGrid.dimensions[1]][];
-                    for (int i = 0; i < frames.frameGrid.dimensions[1]; i++)
+                    // If frameGrid is null, use frameList
+                    if (frames.frameGrid == null)
                     {
-                        frames.frameGrid.names[i] = new string[frames.frameGrid.dimensions[0]];
-                        for (int j = 0; j < frames.frameGrid.dimensions[0]; j++)
+                        if (frames.frameList == null)
+                            return AddLayerResult.ErronousFramesFile;
+
+                        if (!frames.frameList.ContainsKey(frame))
+                            return AddLayerResult.FrameNotFound;
+
+                        int[] frameCoords = frames.frameList[frame];
+                        xOffset = frameCoords[0];
+                        yOffset = frameCoords[1];
+                        width = frameCoords[2] - frameCoords[0];
+                        height = frameCoords[3] - frameCoords[1];
+                    }
+                    else
+                    {
+                        // The frame we're looking for might be an alias. Check if it is, and replace it with the original frame name.
+                        if (frames.aliases != null && frames.aliases.ContainsKey(frame))
+                            frame = frames.aliases[frame];
+
+                        // If names are not defined, set their names to consequent numbers
+                        if (frames.frameGrid.names == null)
                         {
-                            frames.frameGrid.names[i][j] = frameCount.ToString();
-                            frameCount++;
+                            int frameCount = 0;
+
+                            frames.frameGrid.names = new string[frames.frameGrid.dimensions[1]][];
+                            for (int i = 0; i < frames.frameGrid.dimensions[1]; i++)
+                            {
+                                frames.frameGrid.names[i] = new string[frames.frameGrid.dimensions[0]];
+                                for (int j = 0; j < frames.frameGrid.dimensions[0]; j++)
+                                {
+                                    frames.frameGrid.names[i][j] = frameCount.ToString();
+                                    frameCount++;
+                                }
+                            }
                         }
+
+                        // Find the frame we're looking for
+                        bool found = false;
+                        int xIndex = 0;
+                        int yIndex = 0;
+                        for (; yIndex < frames.frameGrid.names.Length; yIndex++)
+                        {
+                            for (; xIndex < frames.frameGrid.names[yIndex].Length; xIndex++)
+                            {
+                                if (frames.frameGrid.names[yIndex][xIndex] == frame)
+                                {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if (found)
+                                break;
+                        }
+
+                        // Frame not found - Return false, indicating the addition was unsuccessful.
+                        if (!found)
+                            return AddLayerResult.FrameNotFound;
+
+                        // Setup the correct frame coordinates
+                        xOffset = xIndex * frames.frameGrid.size[0];
+                        yOffset = yIndex * frames.frameGrid.size[1];
+                        width = frames.frameGrid.dimensions[0];
+                        height = frames.frameGrid.dimensions[1];
                     }
                 }
-
-                for (; yIndex < frames.frameGrid.names.Length; yIndex++)
+                else
                 {
-                    for (; xIndex < frames.frameGrid.names[yIndex].Length; xIndex++)
+                    // If the frames file doesnt exist
+                    if (armorType == null)
                     {
-                        if (frames.frameGrid.names[yIndex][xIndex] == frame)
-                        {
-                            found = true;
-                            break;
-                        }
+                        // If its not an armor item, return a failure
+                        return AddLayerResult.FramesFileNotFound;
                     }
-                    if (found)
-                        break;
-                }
-
-                // Frame not found - Return false, indicating the addition was unsuccessful.
-                if (!found)
-                    return AddLayerResult.FrameNotFound;
-
-                // Setup the correct frame coordinates
-                int xOffset = xIndex * frames.frameGrid.size[0];
-                int yOffset = yIndex * frames.frameGrid.size[1];
-
-                // Load the entire image containing the frames
-                using (Image<Rgba32> img = Image.Load(imagePath))
-                {
-                    // Cut out only the required frame
-                    img.Mutate(i => i.Crop(new Rectangle(xOffset, yOffset, frames.frameGrid.size[0], frames.frameGrid.size[1])));
-
-                    // Set the subject images dimensions to that of the frame if they're 1;1 (1;1 marks the image as uninitialized)
-                    if (fullImage.Height == 1 && fullImage.Width == 1)
-                        fullImage.Mutate(mi => mi.Resize(img.Width, img.Height));
-
-                    // Layer the frame over the subject image
-                    fullImage.Mutate(mi => mi.DrawImage(img, 1));
+                    else
+                    {
+                        // If its an armor item, use the default armor icon assignment method
+                        int[] frameCoords = ARMOR_FRAME_COORDS[armorType.Value];
+                        xOffset = frameCoords[0];
+                        yOffset = frameCoords[1];
+                        width = frameCoords[2] - frameCoords[0];
+                        height = frameCoords[3] - frameCoords[1];
+                    }
                 }
             }
-            // Just load the required image, and overlay it over the subject image if it doesn't point to a frame.
-            else
+
+            // Do the image magic
+            using (Image<Rgba32> img = Image.Load(imagePath))
             {
-                // This segment is separate from the one with the frames as it doesn't crop a frame from the required image
-                // And I'm duplicating the code because I don't want a container wrapping around the entire thing for just a small code difference.
-
-                // Load the entire image containing the frames
-                using (Image<Rgba32> img = Image.Load(imagePath))
+                // If its an armor item, check if the image has the coordinates.
+                // If the image is smaller than the requested frame, use the whole image instead.
+                if (armorType != null)
                 {
-                    // Set the subject images dimensions to that of the frame if they're 1x1 (1x1 marks the image as uninitialized)
-                    if (fullImage.Height == 1 && fullImage.Width == 1)
-                        fullImage.Mutate(mi => mi.Resize(img.Width, img.Height));
-
-                    // Layer the frame over the subject image
-                    fullImage.Mutate(mi => mi.DrawImage(img, 1));
+                    if (img.Width < xOffset + width || img.Height < yOffset + height)
+                        useFull = true;
                 }
+
+                // Cut out the frame we need if useFull is false
+                if (!useFull)
+                {
+                    img.Mutate(i => i.Crop(new Rectangle(xOffset, yOffset, width, height)));
+                }
+
+                // Set the subject images dimensions to that of the frame if they're 1;1 (1;1 marks the image as uninitialized)
+                if (fullImage.Height == 1 && fullImage.Width == 1)
+                    fullImage.Mutate(mi => mi.Resize(img.Width, img.Height));
+
+                // Layer the frame over the subject image
+                fullImage.Mutate(mi => mi.DrawImage(img, 1));
             }
 
             return AddLayerResult.Done;

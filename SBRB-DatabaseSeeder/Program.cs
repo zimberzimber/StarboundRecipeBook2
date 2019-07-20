@@ -37,7 +37,7 @@ delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS
-            = new string[] { ".item", ".object", ".activeitem", ".legs", ".chest", ".head", ".consumable" };
+            = new string[] { ".item", ".object", ".activeitem", ".legs", ".chest", ".head", ".back", ".consumable", ".beamaxe", ".lashlight", ".miningtool" };
 
         static bool silent = false;
         static FileStream logFile;
@@ -51,10 +51,16 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<ArmorData> _DBArmorDatas = new List<ArmorData>();
         static List<ObjectData> _DBObjectDatas = new List<ObjectData>();
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
-        static List<ConsumableData> _DBconsumableDatas = new List<ConsumableData>();
+        static List<ConsumableData> _DBConsumableDatas = new List<ConsumableData>();
+        static List<FlashlightData> _DBFlashlightDatas = new List<FlashlightData>();
+        static List<BeamaxeData> _DBBeamaxeDatas = new List<BeamaxeData>();
+        static List<MiningtoolData> _DBMiningtoolDatas = new List<MiningtoolData>();
         static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
         static List<Recipe> _DBRecipes = new List<Recipe>();
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
+
+
+
 
         static List<string> _warningMessages = new List<string>();
 
@@ -166,7 +172,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         {
             for (int i = 0; i < _itemFiles.Count; i++)
             {
-                Log($"Deserializing file '{_itemFiles[i]}'");
+                Log($"Deserializing item '{_itemFiles[i]}'");
 
                 DeserializedItem item = null;
                 string json = File.ReadAllText(_itemFiles[i]).RemoveComments();
@@ -192,14 +198,34 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     case ".head":
                         item = JSON.Deserialize<DeserializedArmor>(json);
                         item.itemType = DeserializedItem.ItemTypes.Armor;
+                        (item as DeserializedArmor).armorType = ArmorData.ArmorType.Head;
                         break;
                     case ".chest":
                         item = JSON.Deserialize<DeserializedArmor>(json);
                         item.itemType = DeserializedItem.ItemTypes.Armor;
+                        (item as DeserializedArmor).armorType = ArmorData.ArmorType.Chest;
                         break;
                     case ".legs":
                         item = JSON.Deserialize<DeserializedArmor>(json);
                         item.itemType = DeserializedItem.ItemTypes.Armor;
+                        (item as DeserializedArmor).armorType = ArmorData.ArmorType.Legs;
+                        break;
+                    case ".back":
+                        item = JSON.Deserialize<DeserializedArmor>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Armor;
+                        (item as DeserializedArmor).armorType = ArmorData.ArmorType.Back;
+                        break;
+                    case ".flashlight":
+                        item = JSON.Deserialize<DeserializedFlashlight>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Flashlight;
+                        break;
+                    case ".beamaxe":
+                        item = JSON.Deserialize<DeserializedBeamaxe>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Beamaxe;
+                        break;
+                    case ".miningtool":
+                        item = JSON.Deserialize<DeserializedMiningtool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Miningtool;
                         break;
                     default:
                         AddWarning($"No handling method for item '{_itemFiles[i]}'");
@@ -218,6 +244,8 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         {
             for (int i = 0; i < _recipeFiles.Count; i++)
             {
+                Log($"Deserializing recipe '{_recipeFiles[i]}'");
+
                 string json = File.ReadAllText(_recipeFiles[i]).RemoveComments();
                 DeserializedRecipe recipe = JSON.Deserialize<DeserializedRecipe>(json);
                 recipe.filePath = _recipeFiles[i];
@@ -231,7 +259,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
                 DeserializedItem dItem = _deserializedItems[i];
-                Log($"Working on '{dItem.itemName}'...");
+                Log($"Converting item '{dItem.filePath}'");
 
                 Item item = new Item
                 {
@@ -239,7 +267,6 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     ItemId = i,
                     ShortDescription = dItem.shortdescription,
                     Description = dItem.description,
-                    Icon = dItem.GenerateIconImage(),
                     Price = dItem.price,
                     MaxStack = dItem.maxStack,
                     ExtraData = "",
@@ -276,12 +303,12 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     {
                         SourceModId = _mod.SteamId,
                         ItemId = item.ItemId,
-                        ConsumableDataId = _DBconsumableDatas.Count,
+                        ConsumableDataId = _DBConsumableDatas.Count,
                         FoodValue = dconsumable.foodValue,
                     };
 
                     item.ConsumableDataId = consumableItem.ConsumableDataId;
-                    _DBconsumableDatas.Add(consumableItem);
+                    _DBConsumableDatas.Add(consumableItem);
                 }
                 else if (dItem is DeserializedObject dObject)
                 {
@@ -298,18 +325,75 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     item.ObjectDataId = objectItem.ObjectDataId;
                     _DBObjectDatas.Add(objectItem);
                 }
-                else if (dItem is DeserializedArmor dArmor)
+                else if (dItem is DeserializedFlashlight dFlashlight)
+                {
+                    var flaslightItem = new FlashlightData
+                    {
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        FlashlightDataID = _DBFlashlightDatas.Count,
+                        BeamAmbience = dFlashlight.beamAmbience,
+                        BeamLevel = dFlashlight.beamLevel,
+                        LightColor = dFlashlight.lightColor.ToRGBString()
+                    };
+
+                    item.FlashlightDataId = flaslightItem.FlashlightDataID;
+                    _DBFlashlightDatas.Add(flaslightItem);
+                }
+                else if (dItem is DeserializedBeamaxe dBeamaxe)
+                {
+                    var beamaxeItem = new BeamaxeData
+                    {
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        BeamaxeDataID = _DBBeamaxeDatas.Count,
+                        BlockRadius = dBeamaxe.blockRadius,
+                        FireTime = dBeamaxe.fireTime,
+                        RangeBonus = dBeamaxe.rangeBonus,
+                        TileDamage = dBeamaxe.tileDamage
+                    };
+
+                    item.BeamaxeDataId = beamaxeItem.BeamaxeDataID;
+                    _DBBeamaxeDatas.Add(beamaxeItem);
+                }
+                else if (dItem is DeserializedMiningtool dMiningtool)
+                {
+                    var miningtoolItem = new MiningtoolData
+                    {
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        MiningtoolDataID = _DBMiningtoolDatas.Count,
+                        BlockRadius = dMiningtool.blockRadius,
+                        FireTime = dMiningtool.fireTime,
+                        Durability = dMiningtool.durability,
+                        DurabilityPerUse = dMiningtool.durabilityPerUse,
+                        TwoHanded = dMiningtool.twoHanded
+                    };
+
+                    item.MiningtoolDataId = miningtoolItem.MiningtoolDataID;
+                    _DBMiningtoolDatas.Add(miningtoolItem);
+                }
+
+                // Separate if statement here because the icon generation may be different for armors
+                if (dItem is DeserializedArmor dArmor)
                 {
                     var armorItem = new ArmorData
                     {
                         SourceModId = _mod.SteamId,
                         ItemId = item.ItemId,
                         Level = dArmor.level,
-                        ArmorDataId = _DBArmorDatas.Count
+                        ArmorDataId = _DBArmorDatas.Count,
+                        Type = dArmor.armorType
                     };
 
                     item.ArmorDataId = armorItem.ArmorDataId;
                     _DBArmorDatas.Add(armorItem);
+
+                    item.Icon = dItem.GenerateIconImage(dArmor.armorType);
+                }
+                else
+                {
+                    item.Icon = dItem.GenerateIconImage();
                 }
 
                 if (dItem.learnBlueprintsOnPickup != null)
@@ -344,6 +428,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
             for (int i = 0; i < _deserializedRecipes.Count; i++)
             {
                 DeserializedRecipe dRecipe = _deserializedRecipes[i];
+                Log($"Converting recipe '{dRecipe.filePath}'");
 
                 _DBRecipes.Add(new Recipe
                 {
@@ -390,7 +475,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 foreach (var item in _DBObjectDatas)
                 { db.ObjectDatas.Add(item); }
 
-                foreach (var item in _DBconsumableDatas)
+                foreach (var item in _DBConsumableDatas)
                 { db.ConsumableDatas.Add(item); }
 
                 foreach (var item in _DBRecipeUnlocks)
@@ -401,6 +486,15 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
                 foreach (var item in _DBRecipeInputs)
                 { db.RecipeInputs.Add(item); }
+
+                foreach (var item in _DBBeamaxeDatas)
+                { db.BeamaxeDatas.Add(item); }
+
+                foreach (var item in _DBMiningtoolDatas)
+                { db.MiningToolDatas.Add(item); }
+
+                foreach (var item in _DBFlashlightDatas)
+                { db.FlashlightDatas.Add(item); }
 
                 var count = db.SaveChanges();
                 Log("{0} records saved to database", count);

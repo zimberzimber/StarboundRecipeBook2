@@ -60,8 +60,6 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
 
 
-
-
         static List<string> _warningMessages = new List<string>();
 
         static void Main()

@@ -88,10 +88,11 @@
 		var recipesFromItem = RecipeRepo.GetRecipesCraftedWithItem(Model.InternalName);
 		if (recipesFromItem.Count > 0)
 		{
+			<div>Can be crafted into...</div>
 			foreach (var recipe in recipesFromItem)
 			{
 				<div>
-					Crafts '@recipe.OutputItemName'
+					@await Component.InvokeAsync("ItemReferenceFromInternalName", recipe.OutputItemName)
 				</div>
 			}
 		}

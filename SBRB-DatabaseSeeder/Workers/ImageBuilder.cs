@@ -23,6 +23,9 @@ namespace SBRB_DatabaseSeeder.Workers
             public Dictionary<string, string> aliases { get; set; }
 
             public Framegrid frameGrid { get; set; }
+
+            // Some things use a frame list for whatever reason...
+            public Dictionary<string, int[]> frameList { get; set; }
         }
 
         class Framegrid

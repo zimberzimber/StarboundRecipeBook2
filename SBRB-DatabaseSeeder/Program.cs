@@ -6,7 +6,6 @@ using StarboundRecipeBook2.Data;
 using StarboundRecipeBook2.Models;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
@@ -23,8 +22,8 @@ namespace SBRB_DatabaseSeeder
 {
     class Program
     {
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
 
@@ -37,6 +36,8 @@ delete from RecipeInputs where SourceModId = {0};
 delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
+        static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS
+            = new string[] { ".item", ".object", ".activeitem", ".legs", ".chest", ".head", ".consumable" };
 
         static bool silent = false;
         static FileStream logFile;
@@ -47,6 +48,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<DeserializedRecipe> _deserializedRecipes = new List<DeserializedRecipe>();
 
         static List<Item> _DBItems = new List<Item>();
+        static List<ArmorData> _DBArmorDatas = new List<ArmorData>();
         static List<ObjectData> _DBObjectDatas = new List<ObjectData>();
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
         static List<ConsumableData> _DBconsumableDatas = new List<ConsumableData>();
@@ -130,7 +132,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
             Log("----------------------------------------");
             Log("Removing old mod records from database...");
             Log();
-            RemoveModFromDB(_mod.SteamId);
+            //RemoveModFromDB(_mod.SteamId);
 
             Log("----------------------------------------");
             Log("Adding new records to database...");
@@ -156,7 +158,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
             if (extension.Equals(".recipe"))
                 _recipeFiles.Add(file);
-            else if (extension.Equals(".item") || extension.Equals(".object") || extension.Equals(".activeitem") || extension.Equals(".consumable"))
+            else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
                 _itemFiles.Add(file);
         }
 
@@ -187,8 +189,20 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                         item = JSON.Deserialize<DeserializedActiveItem>(json);
                         item.itemType = DeserializedItem.ItemTypes.ActiveItem;
                         break;
+                    case ".head":
+                        item = JSON.Deserialize<DeserializedArmor>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Armor;
+                        break;
+                    case ".chest":
+                        item = JSON.Deserialize<DeserializedArmor>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Armor;
+                        break;
+                    case ".legs":
+                        item = JSON.Deserialize<DeserializedArmor>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Armor;
+                        break;
                     default:
-                        AddWarning($"Not an item extension file received from '{_deserializedItems[i]}'");
+                        AddWarning($"No handling method for item '{_itemFiles[i]}'");
                         break;
                 }
 
@@ -284,6 +298,19 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     item.ObjectDataId = objectItem.ObjectDataId;
                     _DBObjectDatas.Add(objectItem);
                 }
+                else if (dItem is DeserializedArmor dArmor)
+                {
+                    var armorItem = new ArmorData
+                    {
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        Level = dArmor.level,
+                        ArmorDataId = _DBArmorDatas.Count
+                    };
+
+                    item.ArmorDataId = armorItem.ArmorDataId;
+                    _DBArmorDatas.Add(armorItem);
+                }
 
                 if (dItem.learnBlueprintsOnPickup != null)
                 {
@@ -346,13 +373,16 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         {
             using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
             {
-                //db.Database.EnsureDeleted();
+                db.Database.EnsureDeleted();
                 db.Database.EnsureCreated();
 
                 db.Mods.Add(_mod);
 
                 foreach (var item in _DBItems)
                 { db.Items.Add(item); }
+
+                foreach (var item in _DBArmorDatas)
+                { db.ArmorDatas.Add(item); }
 
                 foreach (var item in _DBActiveItemDatas)
                 { db.ActiveItemDatas.Add(item); }

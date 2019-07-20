@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace StarboundRecipeBook2.Models
+﻿namespace StarboundRecipeBook2.Models
 {
     public class ConsumableData
     {

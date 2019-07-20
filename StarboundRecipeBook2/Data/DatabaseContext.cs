@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StarboundRecipeBook2.Models;
-using System;
-using System.Collections.Generic;
 
 namespace StarboundRecipeBook2.Data
 {
@@ -17,6 +15,7 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<ActiveItemData> ActiveItemDatas { get; set; }
         public virtual DbSet<ConsumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
+        public virtual DbSet<ArmorData> ArmorDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
@@ -34,9 +33,10 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Mod>().HasKey(m => m.SteamId);
             builder.Entity<Item>().HasKey(i => new { i.SourceModId, i.ItemId });
 
+            builder.Entity<ObjectData>().HasKey(od => new { od.SourceModId, od.ObjectDataId });
+            builder.Entity<ArmorData>().HasKey(ad => new { ad.SourceModId, ad.ArmorDataId });
             builder.Entity<ConsumableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
-            builder.Entity<ObjectData>().HasKey(od => new { od.SourceModId, od.ObjectDataId });
 
             builder.Entity<Recipe>().HasKey(r => new { r.SourceModId, r.RecipeId });
             builder.Entity<RecipeInput>().HasKey(ri => new { ri.SourceModId, ri.RecipeInputId });
@@ -68,15 +68,22 @@ namespace StarboundRecipeBook2.Data
 
                 builder.Entity<Item>() // Item - Active Item Data (1 : 1)
                     .HasOne(item => item.ActiveItemData)
-                    .WithOne(obj => obj.Item)
+                    .WithOne(act => act.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ActiveItemDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Item>() // Item - consumable Data (1 : 1)
-                    .HasOne(item => item.consumableData)
-                    .WithOne(obj => obj.Item)
+                builder.Entity<Item>() // Item - Consumable Data (1 : 1)
+                    .HasOne(item => item.ConsumableData)
+                    .WithOne(cons => cons.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.ConsumableDataId })
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                builder.Entity<Item>() // Item - Armor Data (1 : 1)
+                    .HasOne(item => item.ArmorData)
+                    .WithOne(armor => armor.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.ArmorDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
             }

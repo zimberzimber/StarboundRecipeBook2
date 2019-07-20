@@ -45,9 +45,9 @@ namespace StarboundRecipeBook2.Services
         }
 
         public List<Mod> GetAllMods(ModIncludeOptions includeOptions = ModIncludeOptions.None)
-            => BaseQuery().ToList();
+            => BaseQuery(includeOptions).ToList();
 
         public Mod GetModById(int steamId, ModIncludeOptions includeOptions = ModIncludeOptions.None)
-            => BaseQuery().FirstOrDefault(m => m.SteamId == steamId);
+            => BaseQuery(includeOptions).FirstOrDefault(m => m.SteamId == steamId);
     }
 }

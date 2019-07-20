@@ -71,7 +71,7 @@ namespace StarboundRecipeBook2.Services
         {
             return _context.Items
                 .Include(i => i.ObjectData)
-                .Include(i => i.consumableData)
+                .Include(i => i.ConsumableData)
                 .Include(i => i.ActiveItemData)
                 .If(includeOptions.HasFlag(ItemIncludeOptions.Mods), q => q.Include(i => i.SourceMod))
                 .If(includeOptions.HasFlag(ItemIncludeOptions.Unlocks), q => q.Include(i => i.Unlocks))

@@ -6,9 +6,7 @@ using System.IO;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
-    /// <summary>
-    /// Class storing deserialized item contents. Including active items, consumables, and objects.
-    /// </summary>
+    /// <summary>Class storing deserialized item contents. Including active items, consumables, and objects.</summary>
     class DeserializedItem
     {
         // Nested class for composite icon deserialization.
@@ -17,20 +15,19 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             public string image { get; set; }
         }
 
-        public enum ItemTypes { Generic, Object, Consumable, ActiveItem };
+        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor };
 
         public string itemName { get; set; }
         public string shortdescription { get; set; }
         public string description { get; set; }
-        public string rarity { get; set; }
+        public string rarity { get; set; } = "common";
         public string category { get; set; }
-        public int price { get; set; }
+        public int price { get; set; } = 0;
         public int maxStack { get; set; } = 1;
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
         public string[] learnBlueprintsOnPickup { get; set; }
         public bool SBRBhidden { get; set; }
-
 
         public ItemTypes itemType { get; set; }
         public string filePath { get; set; }
@@ -48,6 +45,8 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             // EDGE CASE: Composite image consist of images with different sizes.
             // RESULT: Not going to account for that, as its also incorrect usage in Starbounds case.
 
+            // EDGE CASE: The image the item is pointing at does not exist in its mod.
+            // RESULT: The image will be use the missing asset placeholder
 
             using (Image<Rgba32> fullImage = new Image<Rgba32>(1, 1))
             {
@@ -114,5 +113,10 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public double level { get; set; }
         public bool twoHanded { get; set; }
         public string elementalType { get; set; }
+    }
+
+    class DeserializedArmor : DeserializedItem
+    {
+        public double level { get; set; }
     }
 }

@@ -3,9 +3,7 @@ using System;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
-    /// <summary>
-    /// Class storing a deserialized .metadata file. Converted into the 'Mod' model.
-    /// </summary>
+    /// <summary>Class storing a deserialized .metadata file. Converted into the 'Mod' model.</summary>
     class Metadata
     {
         public string steamContentId { get; set; }

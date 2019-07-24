@@ -41,11 +41,11 @@ delete from RecipeInputs where SourceModId = {0};
 delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
-        static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS
-            = new string[] {    ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
-                                ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
-                                ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
-                                ".tillingtool", ".augment", ".currency" };
+        static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS = new string[]
+        {   ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
+            ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
+            ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
+            ".tillingtool", ".augment", ".currency" };
 
         static bool silent = false;
         static FileStream logFile;
@@ -66,6 +66,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<Recipe> _DBRecipes = new List<Recipe>();
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
         static List<AugmentData> _DBAugments = new List<AugmentData>();
+        static List<CurrencyItemData> _DBCurrencyItemDatas = new List<CurrencyItemData>();
 
 
         static List<string> _warningMessages = new List<string>();
@@ -202,6 +203,9 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                         break;
                     case ".augment":
                         item = JSON.Deserialize<DeserializedAugment>(json);
+                        break;
+                    case ".currency":
+                        item = JSON.Deserialize<DeserializedCurrencyItem>(json);
                         break;
 
 
@@ -407,6 +411,20 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     item.AugmentDataId = augmentItem.AugmentDataId;
                     _DBAugments.Add(augmentItem);
                 }
+                else if (dItem is DeserializedCurrencyItem dCurrencyItem)
+                {
+                    var currencyItem = new CurrencyItemData
+                    {
+                        CurrencyItemDataId = _DBCurrencyItemDatas.Count,
+                        SourceModId = _mod.SteamId,
+                        ItemId = item.ItemId,
+                        CurrencyName = dCurrencyItem.currency,
+                        Value = dCurrencyItem.value
+                    };
+
+                    item.CurrencyItemDataId = currencyItem.CurrencyItemDataId;
+                    _DBCurrencyItemDatas.Add(currencyItem);
+                }
 
                 // Separate if statement here because the icon generation may be different for armors
                 if (dItem is DeserializedArmor dArmor)
@@ -529,6 +547,9 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
                 foreach (var item in _DBAugments)
                 { db.AugmentDatas.Add(item); }
+
+                foreach (var item in _DBCurrencyItemDatas)
+                { db.CurrencyItemDatas.Add(item); }
 
                 var count = db.SaveChanges();
                 Log("{0} records saved to database", count);

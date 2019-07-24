@@ -157,7 +157,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         //public DeserializedAugmentEffects[] effects { get; set; }
     }
 
-    class DeserializedCurrency : DeserializedItem
+    class DeserializedCurrencyItem : DeserializedItem
     {
         public string currency { get; set; }
         public int value { get; set; }

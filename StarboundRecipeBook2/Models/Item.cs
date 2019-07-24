@@ -30,6 +30,7 @@ namespace StarboundRecipeBook2.Models
         public int? FlashlightDataId { get; set; }
         public int? ToolDataId { get; set; }
         public int? AugmentDataId { get; set; }
+        public int? CurrencyItemDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual ArmorData ArmorData { get; set; }
@@ -39,6 +40,7 @@ namespace StarboundRecipeBook2.Models
         public virtual FlashlightData FlashlightData { get; set; }
         public virtual ToolData ToolData { get; set; }
         public virtual AugmentData AugmentData { get; set; }
+        public virtual CurrencyItemData CurrencyItemData { get; set; }
 
         public virtual ICollection<RecipeUnlock> Unlocks { get; set; }
     }

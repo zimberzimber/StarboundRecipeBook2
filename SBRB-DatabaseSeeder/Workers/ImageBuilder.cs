@@ -189,8 +189,8 @@ namespace SBRB_DatabaseSeeder.Workers
                         // Setup the correct frame coordinates
                         xOffset = xIndex * frames.frameGrid.size[0];
                         yOffset = yIndex * frames.frameGrid.size[1];
-                        width = frames.frameGrid.dimensions[0];
-                        height = frames.frameGrid.dimensions[1];
+                        width = frames.frameGrid.size[0];
+                        height = frames.frameGrid.size[1];
                     }
                 }
                 else

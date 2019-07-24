@@ -23,6 +23,7 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
         public virtual DbSet<RecipeUnlock> RecipeUnlocks { get; set; }
         public virtual DbSet<AugmentData> AugmentDatas { get; set; }
+        public virtual DbSet<CurrencyItemData> CurrencyItemDatas { get; set; }
 
         // Relationships 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -43,6 +44,7 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<FlashlightData>().HasKey(aid => new { aid.SourceModId, aid.FlashlightDataID });
             builder.Entity<ToolData>().HasKey(aid => new { aid.SourceModId, aid.ToolDataId });
             builder.Entity<AugmentData>().HasKey(aid => new { aid.SourceModId, aid.AugmentDataId });
+            builder.Entity<CurrencyItemData>().HasKey(aid => new { aid.SourceModId, aid.CurrencyItemDataId });
 
             builder.Entity<Recipe>().HasKey(r => new { r.SourceModId, r.RecipeId });
             builder.Entity<RecipeInput>().HasKey(ri => new { ri.SourceModId, ri.RecipeInputId });
@@ -111,6 +113,13 @@ namespace StarboundRecipeBook2.Data
                     .HasOne(item => item.AugmentData)
                     .WithOne(augment => augment.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.AugmentDataId })
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                builder.Entity<Item>() // Item - Currency Item Data (1 : 1)
+                    .HasOne(item => item.CurrencyItemData)
+                    .WithOne(currencyItem => currencyItem.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.CurrencyItemDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
             }

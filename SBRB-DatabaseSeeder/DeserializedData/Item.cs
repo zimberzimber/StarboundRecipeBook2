@@ -159,4 +159,10 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string displayIcon { get; set; }
         //public DeserializedAugmentEffects[] effects { get; set; }
     }
+
+    class DeserializedCurrency : DeserializedItem
+    {
+        public string currency { get; set; }
+        public int value { get; set; }
+    }
 }

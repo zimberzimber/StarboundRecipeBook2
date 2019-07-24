@@ -18,13 +18,18 @@ using System.Text;
 // NOTE:
 // Raw queries seem to be faster. Should try using them when pulling data instead of throught EF core
 
+// Add currency
+// Add thrownitem
+// Add blocks
+
+// To tell whether a currency is used in a crafting recipe, first check if a currency exists with that name, and only then check items
 namespace SBRB_DatabaseSeeder
 {
     class Program
     {
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
 
         const string MOD_REMOVAL_QUERY = @"delete from Mods where SteamId = {0};
@@ -40,7 +45,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
             = new string[] {    ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
                                 ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
                                 ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
-                                ".tillingtool", ".augment" };
+                                ".tillingtool", ".augment", ".currency" };
 
         static bool silent = false;
         static FileStream logFile;

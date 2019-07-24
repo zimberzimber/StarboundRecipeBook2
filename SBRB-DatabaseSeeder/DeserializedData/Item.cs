@@ -17,8 +17,6 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             public string image { get; set; }
         }
 
-        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor, Flashlight, Tool, Augment };
-
         public string itemName { get; set; }
         public string shortdescription { get; set; }
         public string description { get; set; }
@@ -31,7 +29,6 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string[] learnBlueprintsOnPickup { get; set; }
         public bool SBRBhidden { get; set; }
 
-        public ItemTypes itemType { get; set; }
         public string filePath { get; set; }
 
         public byte[] GenerateIconImage(ArmorType? armorType = null)

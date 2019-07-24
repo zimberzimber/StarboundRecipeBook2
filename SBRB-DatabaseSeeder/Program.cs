@@ -187,49 +187,39 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 {
                     case ".item":
                         item = JSON.Deserialize<DeserializedItem>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Generic;
                         break;
                     case ".object":
                         item = JSON.Deserialize<DeserializedObject>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Object;
                         break;
                     case ".consumable":
                         item = JSON.Deserialize<DeserializedConsumable>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Consumable;
                         break;
                     case ".activeitem":
                         item = JSON.Deserialize<DeserializedActiveItem>(json);
-                        item.itemType = DeserializedItem.ItemTypes.ActiveItem;
                         break;
                     case ".flashlight":
                         item = JSON.Deserialize<DeserializedFlashlight>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Flashlight;
                         break;
                     case ".augment":
                         item = JSON.Deserialize<DeserializedAugment>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Augment;
                         break;
 
 
                     // Armors
                     case ".head":
                         item = JSON.Deserialize<DeserializedArmor>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Armor;
                         (item as DeserializedArmor).armorType = ArmorData.ArmorType.Head;
                         break;
                     case ".chest":
                         item = JSON.Deserialize<DeserializedArmor>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Armor;
                         (item as DeserializedArmor).armorType = ArmorData.ArmorType.Chest;
                         break;
                     case ".legs":
                         item = JSON.Deserialize<DeserializedArmor>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Armor;
                         (item as DeserializedArmor).armorType = ArmorData.ArmorType.Legs;
                         break;
                     case ".back":
                         item = JSON.Deserialize<DeserializedArmor>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Armor;
                         (item as DeserializedArmor).armorType = ArmorData.ArmorType.Back;
                         break;
 
@@ -237,37 +227,30 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     // Tools
                     case ".beamaxe":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.Beamaxe;
                         break;
                     case ".miningtool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.MiningTool;
                         break;
                     case ".harvestingtool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.HarvestingTool;
                         break;
                     case ".painttool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.PaintTool;
                         break;
                     case ".wiretool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.WireTool;
                         break;
                     case ".inspectiontool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.InspectionTool;
                         break;
                     case ".tillingtool":
                         item = JSON.Deserialize<DeserializedTool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Tool;
                         (item as DeserializedTool).ToolType = ToolData.ToolType.TillingTool;
                         break;
 

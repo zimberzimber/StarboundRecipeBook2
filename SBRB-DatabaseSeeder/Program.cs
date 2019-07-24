@@ -37,7 +37,10 @@ delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS
-            = new string[] { ".item", ".object", ".activeitem", ".legs", ".chest", ".head", ".back", ".consumable", ".beamaxe", ".lashlight", ".miningtool" };
+            = new string[] {    ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
+                                ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
+                                ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
+                                ".tillingtool", ".augment" };
 
         static bool silent = false;
         static FileStream logFile;
@@ -53,11 +56,11 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<ActiveItemData> _DBActiveItemDatas = new List<ActiveItemData>();
         static List<ConsumableData> _DBConsumableDatas = new List<ConsumableData>();
         static List<FlashlightData> _DBFlashlightDatas = new List<FlashlightData>();
-        static List<BeamaxeData> _DBBeamaxeDatas = new List<BeamaxeData>();
-        static List<MiningtoolData> _DBMiningtoolDatas = new List<MiningtoolData>();
+        static List<ToolData> _DBToolDatas = new List<ToolData>();
         static List<RecipeUnlock> _DBRecipeUnlocks = new List<RecipeUnlock>();
         static List<Recipe> _DBRecipes = new List<Recipe>();
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
+        static List<AugmentData> _DBAugments = new List<AugmentData>();
 
 
         static List<string> _warningMessages = new List<string>();
@@ -193,6 +196,17 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                         item = JSON.Deserialize<DeserializedActiveItem>(json);
                         item.itemType = DeserializedItem.ItemTypes.ActiveItem;
                         break;
+                    case ".flashlight":
+                        item = JSON.Deserialize<DeserializedFlashlight>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Flashlight;
+                        break;
+                    case ".augment":
+                        item = JSON.Deserialize<DeserializedAugment>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Augment;
+                        break;
+
+
+                    // Armors
                     case ".head":
                         item = JSON.Deserialize<DeserializedArmor>(json);
                         item.itemType = DeserializedItem.ItemTypes.Armor;
@@ -213,18 +227,46 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                         item.itemType = DeserializedItem.ItemTypes.Armor;
                         (item as DeserializedArmor).armorType = ArmorData.ArmorType.Back;
                         break;
-                    case ".flashlight":
-                        item = JSON.Deserialize<DeserializedFlashlight>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Flashlight;
-                        break;
+
+
+                    // Tools
                     case ".beamaxe":
-                        item = JSON.Deserialize<DeserializedBeamaxe>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Beamaxe;
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.Beamaxe;
                         break;
                     case ".miningtool":
-                        item = JSON.Deserialize<DeserializedMiningtool>(json);
-                        item.itemType = DeserializedItem.ItemTypes.Miningtool;
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.MiningTool;
                         break;
+                    case ".harvestingtool":
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.HarvestingTool;
+                        break;
+                    case ".painttool":
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.PaintTool;
+                        break;
+                    case ".wiretool":
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.WireTool;
+                        break;
+                    case ".inspectiontool":
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.InspectionTool;
+                        break;
+                    case ".tillingtool":
+                        item = JSON.Deserialize<DeserializedTool>(json);
+                        item.itemType = DeserializedItem.ItemTypes.Tool;
+                        (item as DeserializedTool).ToolType = ToolData.ToolType.TillingTool;
+                        break;
+
+
                     default:
                         AddWarning($"No handling method for item '{_itemFiles[i]}'");
                         break;
@@ -338,38 +380,44 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                     item.FlashlightDataId = flaslightItem.FlashlightDataID;
                     _DBFlashlightDatas.Add(flaslightItem);
                 }
-                else if (dItem is DeserializedBeamaxe dBeamaxe)
+                else if (dItem is DeserializedTool dTool)
                 {
-                    var beamaxeItem = new BeamaxeData
+                    var toolItem = new ToolData
                     {
                         SourceModId = _mod.SteamId,
                         ItemId = item.ItemId,
-                        BeamaxeDataID = _DBBeamaxeDatas.Count,
-                        BlockRadius = dBeamaxe.blockRadius,
-                        FireTime = dBeamaxe.fireTime,
-                        RangeBonus = dBeamaxe.rangeBonus,
-                        TileDamage = dBeamaxe.tileDamage
+                        ToolDataId = _DBToolDatas.Count,
+                        BlockRadius = dTool.blockRadius,
+                        FireTime = dTool.fireTime,
+                        RangeBonus = dTool.rangeBonus,
+                        TileDamage = dTool.tileDamage,
+                        Durability = dTool.durability,
+                        DurabilityPerUse = dTool.durabilityPerUse,
+                        TwoHanded = dTool.twoHanded,
+                        Type = dTool.ToolType
                     };
 
-                    item.BeamaxeDataId = beamaxeItem.BeamaxeDataID;
-                    _DBBeamaxeDatas.Add(beamaxeItem);
+                    item.ToolDataId = toolItem.ToolDataId;
+                    _DBToolDatas.Add(toolItem);
                 }
-                else if (dItem is DeserializedMiningtool dMiningtool)
+                else if (dItem is DeserializedAugment dAugment)
                 {
-                    var miningtoolItem = new MiningtoolData
+                    var augmentItem = new AugmentData
                     {
+                        AugmentDataId = _DBAugments.Count,
                         SourceModId = _mod.SteamId,
-                        ItemId = item.ItemId,
-                        MiningtoolDataID = _DBMiningtoolDatas.Count,
-                        BlockRadius = dMiningtool.blockRadius,
-                        FireTime = dMiningtool.fireTime,
-                        Durability = dMiningtool.durability,
-                        DurabilityPerUse = dMiningtool.durabilityPerUse,
-                        TwoHanded = dMiningtool.twoHanded
+                        ItemId = item.ItemId
                     };
 
-                    item.MiningtoolDataId = miningtoolItem.MiningtoolDataID;
-                    _DBMiningtoolDatas.Add(miningtoolItem);
+                    if (dAugment.augment != null)
+                    {
+                        augmentItem.AugmentType = dAugment.augment.type;
+                        augmentItem.DisplayName = dAugment.augment.displayName;
+                        augmentItem.Name = dAugment.augment.name;
+                    }
+
+                    item.AugmentDataId = augmentItem.AugmentDataId;
+                    _DBAugments.Add(augmentItem);
                 }
 
                 // Separate if statement here because the icon generation may be different for armors
@@ -485,14 +533,14 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
                 foreach (var item in _DBRecipeInputs)
                 { db.RecipeInputs.Add(item); }
 
-                foreach (var item in _DBBeamaxeDatas)
-                { db.BeamaxeDatas.Add(item); }
-
-                foreach (var item in _DBMiningtoolDatas)
-                { db.MiningToolDatas.Add(item); }
+                foreach (var item in _DBToolDatas)
+                { db.ToolDatas.Add(item); }
 
                 foreach (var item in _DBFlashlightDatas)
                 { db.FlashlightDatas.Add(item); }
+
+                foreach (var item in _DBAugments)
+                { db.AugmentDatas.Add(item); }
 
                 var count = db.SaveChanges();
                 Log("{0} records saved to database", count);

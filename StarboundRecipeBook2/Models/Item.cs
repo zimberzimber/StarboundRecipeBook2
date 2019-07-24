@@ -28,16 +28,17 @@ namespace StarboundRecipeBook2.Models
         public int? ConsumableDataId { get; set; }
         public int? MiningtoolDataId { get; set; }
         public int? FlashlightDataId { get; set; }
-        public int? BeamaxeDataId { get; set; }
+        public int? ToolDataId { get; set; }
+        public int? AugmentDataId { get; set; }
 
         public virtual Mod SourceMod { get; set; }
         public virtual ArmorData ArmorData { get; set; }
         public virtual ObjectData ObjectData { get; set; }
         public virtual ActiveItemData ActiveItemData { get; set; }
         public virtual ConsumableData ConsumableData { get; set; }
-        public virtual MiningtoolData MiningtoolData { get; set; }
         public virtual FlashlightData FlashlightData { get; set; }
-        public virtual BeamaxeData BeamaxeData { get; set; }
+        public virtual ToolData ToolData { get; set; }
+        public virtual AugmentData AugmentData { get; set; }
 
         public virtual ICollection<RecipeUnlock> Unlocks { get; set; }
     }

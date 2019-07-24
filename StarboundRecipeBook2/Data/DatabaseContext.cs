@@ -16,13 +16,13 @@ namespace StarboundRecipeBook2.Data
         public virtual DbSet<ConsumableData> ConsumableDatas { get; set; }
         public virtual DbSet<ObjectData> ObjectDatas { get; set; }
         public virtual DbSet<ArmorData> ArmorDatas { get; set; }
-        public virtual DbSet<BeamaxeData> BeamaxeDatas { get; set; }
-        public virtual DbSet<MiningtoolData> MiningToolDatas { get; set; }
+        public virtual DbSet<ToolData> ToolDatas { get; set; }
         public virtual DbSet<FlashlightData> FlashlightDatas { get; set; }
         public virtual DbSet<Recipe> Recipes { get; set; }
         public virtual DbSet<RecipeInput> RecipeInputs { get; set; }
         public virtual DbSet<RecipeGroup> RecipeGroups { get; set; }
         public virtual DbSet<RecipeUnlock> RecipeUnlocks { get; set; }
+        public virtual DbSet<AugmentData> AugmentDatas { get; set; }
 
         // Relationships 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -40,9 +40,9 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<ArmorData>().HasKey(ad => new { ad.SourceModId, ad.ArmorDataId });
             builder.Entity<ConsumableData>().HasKey(cd => new { cd.SourceModId, cd.ConsumableDataId });
             builder.Entity<ActiveItemData>().HasKey(aid => new { aid.SourceModId, aid.ActiveItemDataId });
-            builder.Entity<BeamaxeData>().HasKey(aid => new { aid.SourceModId, aid.BeamaxeDataID });
             builder.Entity<FlashlightData>().HasKey(aid => new { aid.SourceModId, aid.FlashlightDataID });
-            builder.Entity<MiningtoolData>().HasKey(aid => new { aid.SourceModId, aid.MiningtoolDataID });
+            builder.Entity<ToolData>().HasKey(aid => new { aid.SourceModId, aid.ToolDataId });
+            builder.Entity<AugmentData>().HasKey(aid => new { aid.SourceModId, aid.AugmentDataId });
 
             builder.Entity<Recipe>().HasKey(r => new { r.SourceModId, r.RecipeId });
             builder.Entity<RecipeInput>().HasKey(ri => new { ri.SourceModId, ri.RecipeInputId });
@@ -93,26 +93,24 @@ namespace StarboundRecipeBook2.Data
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
-
-
-                builder.Entity<Item>() // Item - Armor Data (1 : 1)
-                    .HasOne(item => item.BeamaxeData)
-                    .WithOne(beamaxe => beamaxe.Item)
-                    .HasForeignKey<Item>(item => new { item.SourceModId, item.BeamaxeDataId })
+                builder.Entity<Item>() // Item - Tool Data (1 : 1)
+                    .HasOne(item => item.ToolData)
+                    .WithOne(tool => tool.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.ToolDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Item>() // Item - Armor Data (1 : 1)
+                builder.Entity<Item>() // Item - Flashlight Data (1 : 1)
                     .HasOne(item => item.FlashlightData)
                     .WithOne(flashlight => flashlight.Item)
                     .HasForeignKey<Item>(item => new { item.SourceModId, item.FlashlightDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                builder.Entity<Item>() // Item - Armor Data (1 : 1)
-                    .HasOne(item => item.MiningtoolData)
-                    .WithOne(miningTool => miningTool.Item)
-                    .HasForeignKey<Item>(item => new { item.SourceModId, item.MiningtoolDataId })
+                builder.Entity<Item>() // Item - Augment Data (1 : 1)
+                    .HasOne(item => item.AugmentData)
+                    .WithOne(augment => augment.Item)
+                    .HasForeignKey<Item>(item => new { item.SourceModId, item.AugmentDataId })
                     .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
             }

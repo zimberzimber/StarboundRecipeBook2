@@ -4,6 +4,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
 using static StarboundRecipeBook2.Models.ArmorData;
+using static StarboundRecipeBook2.Models.ToolData;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
@@ -16,7 +17,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             public string image { get; set; }
         }
 
-        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor, Beamaxe, Flashlight, Miningtool };
+        public enum ItemTypes { Generic, Object, Consumable, ActiveItem, Armor, Flashlight, Tool, Augment };
 
         public string itemName { get; set; }
         public string shortdescription { get; set; }
@@ -112,7 +113,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     class DeserializedActiveItem : DeserializedItem
     {
         public double level { get; set; }
-        public bool twoHanded { get; set; }
+        public bool twoHanded { get; set; } = false;
         public string elementalType { get; set; }
     }
 
@@ -129,20 +130,33 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public double beamAmbience { get; set; }
     }
 
-    class DeserializedMiningtool : DeserializedItem
+    class DeserializedTool : DeserializedItem
     {
-        public int blockRadius { get; set; }
-        public double durability { get; set; }
-        public double durabilityPerUse { get; set; }
-        public bool twoHanded { get; set; }
-        public double fireTime { get; set; }
+        public ToolType ToolType { get; set; }
+
+        public int? blockRadius { get; set; }
+        public bool twoHanded { get; set; } = false;
+        public double? fireTime { get; set; }
+        public double? tileDamage { get; set; }
+        public double? rangeBonus { get; set; }
+
+        public double? durability { get; set; }
+        public double? durabilityPerUse { get; set; }
     }
 
-    class DeserializedBeamaxe : DeserializedItem
+    class DeserializedAugment : DeserializedItem
     {
-        public double fireTime { get; set; }
-        public double blockRadius { get; set; }
-        public double tileDamage { get; set; }
-        public double rangeBonus { get; set; }
+        public DeserializedAugmentData augment { get; set; }
+    }
+
+    // Starbound has the actual augment data stored in a table within the items definitions
+    // It will be deserialized into this
+    public class DeserializedAugmentData
+    {
+        public string type { get; set; }
+        public string name { get; set; }
+        public string displayName { get; set; }
+        public string displayIcon { get; set; }
+        //public DeserializedAugmentEffects[] effects { get; set; }
     }
 }

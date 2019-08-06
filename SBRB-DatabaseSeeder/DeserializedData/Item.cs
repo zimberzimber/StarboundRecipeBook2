@@ -3,8 +3,7 @@ using SBRB_DatabaseSeeder.Workers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
-using static StarboundRecipeBook2.Models.ArmorData;
-using static StarboundRecipeBook2.Models.ToolData;
+using StarboundRecipeBook2.MongoModels;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
 {
@@ -22,8 +21,8 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string description { get; set; }
         public string rarity { get; set; } = "common";
         public string category { get; set; }
-        public int price { get; set; } = 0;
-        public int maxStack { get; set; } = 1;
+        public uint price { get; set; } = 0;
+        public uint maxStack { get; set; } = 1;
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
         public string[] learnBlueprintsOnPickup { get; set; }
@@ -31,7 +30,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
         public string filePath { get; set; }
 
-        public byte[] GenerateIconImage(ArmorType? armorType = null)
+        public byte[] GenerateIconImage(ArmorTypes? armorType = null)
         {
             // Create the initial image, with 1x1 marking it as uninitialized.
             // Because I highly doubt anyone is going to use a smaller image.
@@ -117,21 +116,21 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     class DeserializedArmor : DeserializedItem
     {
         public double level { get; set; }
-        public ArmorType armorType { get; set; }
+        public ArmorTypes armorType { get; set; }
     }
 
     class DeserializedFlashlight : DeserializedItem
     {
-        public int[] lightColor { get; set; }
+        public byte[] lightColor { get; set; }
         public double beamLevel { get; set; }
         public double beamAmbience { get; set; }
     }
 
     class DeserializedTool : DeserializedItem
     {
-        public ToolType ToolType { get; set; }
+        public ToolTypes ToolType { get; set; }
 
-        public int? blockRadius { get; set; }
+        public uint? blockRadius { get; set; }
         public bool twoHanded { get; set; } = false;
         public double? fireTime { get; set; }
         public double? tileDamage { get; set; }
@@ -148,18 +147,27 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
     // Starbound has the actual augment data stored in a table within the items definitions
     // It will be deserialized into this
-    public class DeserializedAugmentData
+    class DeserializedAugmentData
     {
         public string type { get; set; }
         public string name { get; set; }
         public string displayName { get; set; }
         public string displayIcon { get; set; }
-        //public DeserializedAugmentEffects[] effects { get; set; }
     }
 
     class DeserializedCurrencyItem : DeserializedItem
     {
         public string currency { get; set; }
         public int value { get; set; }
+    }
+
+    class DeserializedMaterialItem : DeserializedItem
+    {
+        public int materialId { get; set; }
+    }
+
+    class DeserializedLiquidItem : DeserializedItem
+    {
+        public string liquid { get; set; }
     }
 }

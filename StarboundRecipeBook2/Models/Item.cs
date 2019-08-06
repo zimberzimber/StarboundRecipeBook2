@@ -12,8 +12,8 @@ namespace StarboundRecipeBook2.Models
         public string ShortDescription { get; set; }
         public string Description { get; set; }
         public byte[] Icon { get; set; }
-        public int Price { get; set; }
-        public int MaxStack { get; set; }
+        public uint Price { get; set; }
+        public uint MaxStack { get; set; }
         public string ExtraData { get; set; }
         public string FilePath { get; set; }
         public Rarities Rarity { get; set; }

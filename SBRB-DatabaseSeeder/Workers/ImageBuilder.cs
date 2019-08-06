@@ -3,9 +3,9 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
+using StarboundRecipeBook2.MongoModels;
 using System.Collections.Generic;
 using System.IO;
-using static StarboundRecipeBook2.Models.ArmorData;
 
 namespace SBRB_DatabaseSeeder.Workers
 {
@@ -13,12 +13,12 @@ namespace SBRB_DatabaseSeeder.Workers
     // Or at least what I think they are...
     static class ImageBuilder
     {
-        static readonly Dictionary<ArmorType, int[]> ARMOR_FRAME_COORDS = new Dictionary<ArmorType, int[]>
+        static readonly Dictionary<ArmorTypes, int[]> ARMOR_FRAME_COORDS = new Dictionary<ArmorTypes, int[]>
         {
-            {ArmorType.Head, new int[]{ 0, 0, 16, 16} },
-            {ArmorType.Chest, new int[]{ 16, 0, 32, 16} },
-            {ArmorType.Legs, new int[]{ 32, 0, 48, 16} },
-            {ArmorType.Back, new int[]{ 48, 0, 64, 16} }
+            {ArmorTypes.Head, new int[]{ 0, 0, 16, 16} },
+            {ArmorTypes.Chest, new int[]{ 16, 0, 32, 16} },
+            {ArmorTypes.Legs, new int[]{ 32, 0, 48, 16} },
+            {ArmorTypes.Back, new int[]{ 48, 0, 64, 16} }
         };
 
         // These nested classes are used in .frames file deserialization.
@@ -56,7 +56,7 @@ namespace SBRB_DatabaseSeeder.Workers
         /// <param name="imagePath">Path to image</param>
         /// <param name="itemFilePath">Path to the file using the image</param>
         /// <returns>Returns true if the image was added successfully. False otherwise.</returns>
-        public static AddLayerResult AddLayer(this Image<Rgba32> fullImage, string imagePath, string itemFilePath, ArmorType? armorType)
+        public static AddLayerResult AddLayer(this Image<Rgba32> fullImage, string imagePath, string itemFilePath, ArmorTypes? armorType)
         {
             // Check if the path is from the same directory, or from the mods root
             if (imagePath.StartsWith('/'))

@@ -10,6 +10,6 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     class DeserializedCurrency
     {
         public string representativeItem { get; set; }
-        public int playerMax { get; set; }
+        public uint playerMax { get; set; }
     }
 }

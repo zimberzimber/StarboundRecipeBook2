@@ -153,11 +153,6 @@ namespace StarboundRecipeBook2.Data
                     .OnDelete(DeleteBehavior.Cascade);
             }
 
-            // Currency Representetive Item
-            {
-                builder.Entity<Currency>()
-                    .HasOne(cu => cu.RepresentativeItem)
-            }
         }
     }
 }

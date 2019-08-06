@@ -1,4 +1,4 @@
-﻿using StarboundRecipeBook2.Models;
+﻿using StarboundRecipeBook2.MongoModels;
 using System;
 
 namespace SBRB_DatabaseSeeder.DeserializedData
@@ -21,14 +21,12 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         {
             return new Mod
             {
-                AddedItems = null,
-                AddedRecipes = null,
+                Author = author,
                 FriendlyName = friendlyName,
                 InternalName = name,
                 LastUpdated = DateTime.Now,
-                SteamId = int.Parse(steamContentId),
-                Version = version,
-                Author = author
+                SteamId = uint.Parse(steamContentId),
+                Version = version
             };
         }
     }

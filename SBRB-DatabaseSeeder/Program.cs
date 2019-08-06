@@ -67,6 +67,7 @@ delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
         static List<RecipeInput> _DBRecipeInputs = new List<RecipeInput>();
         static List<AugmentData> _DBAugments = new List<AugmentData>();
         static List<CurrencyItemData> _DBCurrencyItemDatas = new List<CurrencyItemData>();
+        static List<Currency> _DBCurrency = new List<Currency>();
 
 
         static List<string> _warningMessages = new List<string>();

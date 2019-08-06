@@ -53,6 +53,8 @@ namespace StarboundRecipeBook2.Data
             builder.Entity<Relationship_Recipe_RecipeGroup>().HasKey(rrr => new { rrr.SourceModId, rrr.RecipeId, rrr.RecipeGroupName });
             builder.Entity<RecipeUnlock>().HasKey(ru => new { ru.UnlockingItemSourceModId, ru.UnlockingItemId, ru.UnlockedItemName });
 
+            builder.Entity<Currency>().HasKey(cu => cu.Name);
+
             // Item Relationships
             {
                 builder.Entity<Item>() // Item - Mod (1 : M)
@@ -149,6 +151,12 @@ namespace StarboundRecipeBook2.Data
                     .WithMany(recipeGroups => recipeGroups.Recipes)
                     .HasForeignKey(rrr => rrr.RecipeGroupName)
                     .OnDelete(DeleteBehavior.Cascade);
+            }
+
+            // Currency Representetive Item
+            {
+                builder.Entity<Currency>()
+                    .HasOne(cu => cu.RepresentativeItem)
             }
         }
     }

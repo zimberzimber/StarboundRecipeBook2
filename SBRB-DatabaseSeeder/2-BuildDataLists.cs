@@ -1,11 +1,11 @@
 ﻿using Jil;
-using SBRB_DatabaseSeeder.DeserializedData;
-using SBRB_DatabaseSeeder.Workers;
-using StarboundRecipeBook2.MongoModels;
+using SBRB.Models;
+using SBRB.Seeder.DeserializedData;
+using SBRB.Seeder.Workers;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SBRB_DatabaseSeeder
+namespace SBRB.Seeder
 {
     partial class Program
     {
@@ -43,6 +43,15 @@ namespace SBRB_DatabaseSeeder
                         break;
                     case ".currency":
                         item = JSON.Deserialize<DeserializedCurrencyItem>(json);
+                        break;
+                    case ".matitem":
+                        item = JSON.Deserialize<DeserializedMaterialItem>(json);
+                        break;
+                    case ".liquid":
+                        item = JSON.Deserialize<DeserializedLiquidItem>(json);
+                        break;
+                    case ".instrument":
+                        item = JSON.Deserialize<DeserializedInstrument>(json);
                         break;
 
 
@@ -94,7 +103,6 @@ namespace SBRB_DatabaseSeeder
                         item = JSON.Deserialize<DeserializedTool>(json);
                         (item as DeserializedTool).ToolType = ToolTypes.TillingTool;
                         break;
-
 
                     default:
                         AddWarning($"No handling method for item '{_itemFiles[i]}'");

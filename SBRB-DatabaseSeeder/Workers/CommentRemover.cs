@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace SBRB_DatabaseSeeder.Workers
+namespace SBRB.Seeder.Workers
 {
     static class CommentRemover
     {

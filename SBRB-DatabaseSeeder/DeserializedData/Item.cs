@@ -1,11 +1,11 @@
 ﻿using Jil;
-using SBRB_DatabaseSeeder.Workers;
+using SBRB.Models;
+using SBRB.Seeder.Workers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
-using StarboundRecipeBook2.MongoModels;
 
-namespace SBRB_DatabaseSeeder.DeserializedData
+namespace SBRB.Seeder.DeserializedData
 {
     /// <summary>Class storing deserialized item contents. Including active items, consumables, and objects.</summary>
     class DeserializedItem
@@ -21,12 +21,12 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public string description { get; set; }
         public string rarity { get; set; } = "common";
         public string category { get; set; }
-        public uint price { get; set; } = 0;
-        public uint maxStack { get; set; } = 1;
+        public uint? price { get; set; }
+        public uint? maxStack { get; set; }
         public string tooltipKind { get; set; }
         public dynamic inventoryIcon { get; set; }
         public string[] learnBlueprintsOnPickup { get; set; }
-        public bool SBRBhidden { get; set; }
+        public bool SBRBhidden { get; set; } = false;
 
         public string filePath { get; set; }
 
@@ -94,7 +94,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
     class DeserializedObject : DeserializedItem
     {
         public string race { get; set; }
-        public bool printable { get; set; }
+        public bool? printable { get; set; }
         public string[] colonyTags { get; set; }
 
         // Objects use 'objectName' instead of 'itemName'
@@ -103,19 +103,19 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
     class DeserializedConsumable : DeserializedItem
     {
-        public double foodValue { get; set; }
+        public double? foodValue { get; set; }
     }
 
     class DeserializedActiveItem : DeserializedItem
     {
-        public double level { get; set; }
-        public bool twoHanded { get; set; } = false;
+        public double? level { get; set; }
+        public bool? twoHanded { get; set; }
         public string elementalType { get; set; }
     }
 
     class DeserializedArmor : DeserializedItem
     {
-        public double level { get; set; }
+        public double? level { get; set; }
         public ArmorTypes armorType { get; set; }
     }
 
@@ -131,7 +131,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
         public ToolTypes ToolType { get; set; }
 
         public uint? blockRadius { get; set; }
-        public bool twoHanded { get; set; } = false;
+        public bool? twoHanded { get; set; }
         public double? fireTime { get; set; }
         public double? tileDamage { get; set; }
         public double? rangeBonus { get; set; }
@@ -163,11 +163,16 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
     class DeserializedMaterialItem : DeserializedItem
     {
-        public int materialId { get; set; }
+        public uint materialId { get; set; }
     }
 
     class DeserializedLiquidItem : DeserializedItem
     {
         public string liquid { get; set; }
+    }
+
+    class DeserializedInstrument : DeserializedItem
+    {
+
     }
 }

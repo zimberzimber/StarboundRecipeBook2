@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using System;
 
-namespace StarboundRecipeBook2.MongoModels
+namespace SBRB.Models
 {
     /// <summary>
     /// Class for storing mod meta data

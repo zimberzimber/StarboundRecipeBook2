@@ -10,7 +10,7 @@ namespace StarboundRecipeBook2.Controllers
         IItemRepository _itemRepo;
 
         public ItemsController(IItemRepository itemRepo)
-        {            _itemRepo = itemRepo;        }
+        { _itemRepo = itemRepo; }
 
         public IActionResult Index()
         {

@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StarboundRecipeBook2\StarboundRecipeBook2.csproj" />
+    <ProjectReference Include="..\ModelsLibrary\SBRB-Shared.csproj" />
   </ItemGroup>
 
 </Project>

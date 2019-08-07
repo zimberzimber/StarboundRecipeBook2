@@ -1,4 +1,4 @@
-﻿namespace SBRB_DatabaseSeeder.Workers
+﻿namespace SBRB.Seeder.Workers
 {
     public static class AbsolutePathToRelative
     {

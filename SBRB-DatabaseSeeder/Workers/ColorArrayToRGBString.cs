@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace SBRB_DatabaseSeeder.Workers
+namespace SBRB.Seeder.Workers
 {
     static class ColorArrayToRGBString
     {

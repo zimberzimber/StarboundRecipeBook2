@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SBRB_DatabaseSeeder.DeserializedData
+namespace SBRB.Seeder.DeserializedData
 {
     class DeserializedCurrencyCollection
     {

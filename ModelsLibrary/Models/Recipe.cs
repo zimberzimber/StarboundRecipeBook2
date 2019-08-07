@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 
-namespace StarboundRecipeBook2.MongoModels
+namespace SBRB.Models
 {
     /// <summary>
     /// Class used to compose a recipes unique ID within the database

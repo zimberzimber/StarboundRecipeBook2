@@ -1,13 +1,13 @@
 ﻿using Jil;
+using SBRB.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
-using StarboundRecipeBook2.MongoModels;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SBRB_DatabaseSeeder.Workers
+namespace SBRB.Seeder.Workers
 {
     /// <summary>Class housing an extension for layering an image over a subject, following Starbounds formats/methods.</summary>
     // Or at least what I think they are...

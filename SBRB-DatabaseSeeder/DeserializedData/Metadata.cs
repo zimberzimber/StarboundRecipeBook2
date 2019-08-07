@@ -1,7 +1,7 @@
-﻿using StarboundRecipeBook2.MongoModels;
+﻿using SBRB.Models;
 using System;
 
-namespace SBRB_DatabaseSeeder.DeserializedData
+namespace SBRB.Seeder.DeserializedData
 {
     /// <summary>Class storing a deserialized .metadata file. Converted into the 'Mod' model.</summary>
     class Metadata

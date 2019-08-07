@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StarboundRecipeBook2.Data;
-using System.Data.SqlClient;
+﻿using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
+using SBRB.Database;
+using SBRB.Models;
+using System;
 
-namespace SBRB_DatabaseSeeder
+namespace SBRB.Seeder
 {
     partial class Program
     {
@@ -16,36 +18,39 @@ delete from Recipes where SourceModId = {0};
 delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
 delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
 
-        static void RemoveModFromDB(int modId)
+        static DatabaseConnection _db;
+
+        static void GetDatabaseConnection()
         {
-            using (SqlConnection connection = new SqlConnection(DatabaseContext.CONNECTION_STRING))
-            using (SqlCommand command = new SqlCommand(string.Format(MOD_REMOVAL_QUERY, modId), connection))
-            {
-                connection.Open();
-                using (SqlDataReader reader = command.ExecuteReader())
-                    while (reader.Read()) { };
-                connection.Close();
-            }
+            _db = new DatabaseConnection("mongodb://localhost");
+        }
+
+        static void RemoveModFromDB(uint modId)
+        {
+            Console.WriteLine("Removing Items...");
+            var itemFilter = Builders<Item>.Filter.Eq(i => i.ID.SourceModId, modId);
+            var itemResult = _db.Items.DeleteMany(itemFilter);
+            Console.WriteLine(string.Format("Item result: {0}", itemResult.IsAcknowledged ? itemResult.DeletedCount.ToString() : "Didn't work"));
+
+            Console.WriteLine("Removing Recipes...");
+            var recipeFilter = Builders<Recipe>.Filter.Eq(r => r.ID.SourceModId, modId);
+            var recipeResult = _db.Recipes.DeleteMany(recipeFilter);
+            Console.WriteLine(string.Format("Recipe result: {0}", recipeResult.IsAcknowledged ? recipeResult.DeletedCount.ToString() : "Didn't work"));
+
+            Console.WriteLine("Removing Mod...");
+            var modResult = _db.Mods.DeleteOne(m => m.SteamId == modId);
+            Console.WriteLine(string.Format("Mod result: {0}", modResult.IsAcknowledged ? modResult.DeletedCount.ToString() : "Didn't work"));
         }
 
         static void AddToDatabase()
         {
-            using (var db = new DatabaseContext(new DbContextOptions<DatabaseContext>()))
-            {
-                db.Database.EnsureDeleted();
-                db.Database.EnsureCreated();
+            if (_DBItems.Count > 0)
+                _db.Items.InsertMany(_DBItems);
 
-                //db.Mods.Add(_mod);
+            if (_DBRecipes.Count > 0)
+                _db.Recipes.InsertMany(_DBRecipes);
 
-                //foreach (var item in _DBItems)
-                //{ db.Items.Add(item); }
-
-                //foreach (var item in _DBRecipes)
-                //{ db.Recipes.Add(item); }
-
-                var count = db.SaveChanges();
-                Log("{0} records saved to database", count);
-            }
+            _db.Mods.InsertOne(_mod);
         }
     }
 }

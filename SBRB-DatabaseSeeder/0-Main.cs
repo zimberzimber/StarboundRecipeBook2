@@ -1,6 +1,6 @@
 ﻿using Jil;
-using SBRB_DatabaseSeeder.DeserializedData;
-using StarboundRecipeBook2.MongoModels;
+using SBRB.Models;
+using SBRB.Seeder.DeserializedData;
 using System;
 using System.IO;
 
@@ -17,17 +17,21 @@ using System.IO;
 // Add liquids
 
 // To tell whether a currency is used in a crafting recipe, first check if a currency exists with that name, and only then check items
-namespace SBRB_DatabaseSeeder
+namespace SBRB.Seeder
 {
     partial class Program
     {
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
 
-        static void Main()
+        static void Main(string[] args)
         {
+            for (int i = 0; i < args.Length; i++)
+            {
+                Console.WriteLine(args[i]);
+            }
             // Create a file to contain the logged messages
             Directory.CreateDirectory("logs");
             logFile = File.Create("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
@@ -98,9 +102,14 @@ namespace SBRB_DatabaseSeeder
                 Log("No warnings, proceeding...");
 
             Log("----------------------------------------");
+            Log("Connecting to database...");
+            Log();
+            GetDatabaseConnection();
+
+            Log("----------------------------------------");
             Log("Removing old mod records from database...");
             Log();
-            //RemoveModFromDB(_mod.SteamId);
+            RemoveModFromDB(_mod.SteamId);
 
             Log("----------------------------------------");
             Log("Adding new records to database...");

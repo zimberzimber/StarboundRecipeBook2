@@ -1,10 +1,10 @@
-﻿using SBRB_DatabaseSeeder.DeserializedData;
-using SBRB_DatabaseSeeder.Workers;
-using StarboundRecipeBook2.MongoModels;
+﻿using SBRB.Models;
+using SBRB.Seeder.DeserializedData;
+using SBRB.Seeder.Workers;
 using System;
 using System.Collections.Generic;
 
-namespace SBRB_DatabaseSeeder
+namespace SBRB.Seeder
 {
     partial class Program
     {
@@ -99,12 +99,16 @@ namespace SBRB_DatabaseSeeder
                     else if (dItem is DeserializedAugment dAugment)
                     {
                         item.ItemType = ItemTypes.Augment;
-                        item.Augment = new AugmentData
+
+                        if (dAugment.augment != null)
                         {
-                            DisplayName = dAugment.augment.displayName,
-                            Name = dAugment.augment.name,
-                            Type = dAugment.augment.type,
-                        };
+                            item.Augment = new AugmentData
+                            {
+                                DisplayName = dAugment.augment.displayName,
+                                Name = dAugment.augment.name,
+                                Type = dAugment.augment.type,
+                            };
+                        }
                     }
                     else if (dItem is DeserializedCurrencyItem dCurrencyItem)
                     {
@@ -114,6 +118,26 @@ namespace SBRB_DatabaseSeeder
                             CurrencyName = dCurrencyItem.currency,
                             CurrencyValue = dCurrencyItem.value,
                         };
+                    }
+                    else if (dItem is DeserializedMaterialItem dMaterial)
+                    {
+                        item.ItemType = ItemTypes.Material;
+                        item.Material = new MaterialData
+                        {
+                            MaterialId = dMaterial.materialId
+                        };
+                    }
+                    else if (dItem is DeserializedLiquidItem dLiquid)
+                    {
+                        item.ItemType = ItemTypes.Liquid;
+                        item.Liquid = new LiquidData
+                        {
+                            Liquid = dLiquid.liquid
+                        };
+                    }
+                    else if (dItem is DeserializedInstrument dInstrument)
+                    {
+                        item.ItemType = ItemTypes.Instrument;
                     }
                 }
             }

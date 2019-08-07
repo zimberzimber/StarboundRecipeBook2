@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace SBRB_DatabaseSeeder
+namespace SBRB.Seeder
 {
     partial class Program
     {
@@ -11,7 +11,11 @@ namespace SBRB_DatabaseSeeder
         {   ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
             ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
             ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
-            ".tillingtool", ".augment", ".currency" };
+            ".tillingtool", ".augment", ".currency", ".instrument", ".liquid",
+            ".matitem", ".throwitem" };
+
+
+        // missing exts: .instrument .liquid .matitem .throwitem
 
         static List<string> _itemFiles = new List<string>();
         static List<string> _recipeFiles = new List<string>();

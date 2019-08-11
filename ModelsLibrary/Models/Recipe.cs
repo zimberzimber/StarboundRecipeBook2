@@ -7,8 +7,8 @@ namespace SBRB.Models
     /// </summary>
     public class CompositeRecipeId
     {
-        public uint RecipeId { get; set; }
         public uint SourceModId { get; set; }
+        public uint RecipeId { get; set; }
     }
 
     /// <summary>

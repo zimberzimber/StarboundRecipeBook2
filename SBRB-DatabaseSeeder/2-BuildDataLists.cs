@@ -2,6 +2,7 @@
 using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
 using SBRB.Seeder.Workers;
+using SBRB_DatabaseSeeder.Workers;
 using System.Collections.Generic;
 using System.IO;
 
@@ -16,7 +17,7 @@ namespace SBRB.Seeder
         {
             for (int i = 0; i < _itemFiles.Count; i++)
             {
-                Log($"Deserializing item '{_itemFiles[i]}'");
+                Logging.Log("Deserializing item: {0}", _itemFiles[i].ToReletivePath(modPath));
 
                 DeserializedItem item = null;
                 string json = File.ReadAllText(_itemFiles[i]).RemoveComments();
@@ -105,7 +106,7 @@ namespace SBRB.Seeder
                         break;
 
                     default:
-                        AddWarning($"No handling method for item '{_itemFiles[i]}'");
+                        Logging.AddWarning("No handling method for item: {0}", _itemFiles[i].ToReletivePath(modPath));
                         break;
                 }
 
@@ -121,7 +122,7 @@ namespace SBRB.Seeder
         {
             for (int i = 0; i < _recipeFiles.Count; i++)
             {
-                Log($"Deserializing recipe '{_recipeFiles[i]}'");
+                Logging.Log("Deserializing recipe: {0}", _recipeFiles[i].ToReletivePath(modPath));
 
                 string json = File.ReadAllText(_recipeFiles[i]).RemoveComments();
                 DeserializedRecipe recipe = JSON.Deserialize<DeserializedRecipe>(json);

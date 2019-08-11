@@ -1,6 +1,7 @@
 ﻿using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
 using SBRB.Seeder.Workers;
+using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.Collections.Generic;
 
@@ -16,7 +17,7 @@ namespace SBRB.Seeder
             for (int i = 0; i < _deserializedItems.Count; i++)
             {
                 DeserializedItem dItem = _deserializedItems[i];
-                Log($"Converting item '{dItem.filePath}'");
+                Logging.Log("Converting item: {0}", dItem.filePath.ToReletivePath(modPath));
 
                 Item item = new Item
                 {
@@ -148,7 +149,7 @@ namespace SBRB.Seeder
             for (int i = 0; i < _deserializedRecipes.Count; i++)
             {
                 DeserializedRecipe dRecipe = _deserializedRecipes[i];
-                Log($"Converting recipe '{dRecipe.filePath}'");
+                Logging.Log("Converting recipe: {0}", dRecipe.filePath.ToReletivePath(modPath));
             }
         }
     }

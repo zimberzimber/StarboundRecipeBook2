@@ -1,4 +1,6 @@
-﻿using System;
+﻿using SBRB.Seeder.Workers;
+using SBRB_DatabaseSeeder.Workers;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,9 +15,6 @@ namespace SBRB.Seeder
             ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
             ".tillingtool", ".augment", ".currency", ".instrument", ".liquid",
             ".matitem", ".throwitem" };
-
-
-        // missing exts: .instrument .liquid .matitem .throwitem
 
         static List<string> _itemFiles = new List<string>();
         static List<string> _recipeFiles = new List<string>();
@@ -37,9 +36,15 @@ namespace SBRB.Seeder
             string extension = Path.GetExtension(file);
 
             if (extension.Equals(".recipe"))
+            {
                 _recipeFiles.Add(file);
+                Logging.Log("Found recipe file:\t{0}", file.ToReletivePath(modPath));
+            }
             else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
+            {
                 _itemFiles.Add(file);
+                Logging.Log("Found item file:\t{0}", file.ToReletivePath(modPath));
+            }
         }
     }
 }

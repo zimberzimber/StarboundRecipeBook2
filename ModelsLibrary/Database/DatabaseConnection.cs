@@ -6,11 +6,13 @@ namespace SBRB.Database
 {
     public class DatabaseConnection
     {
+        const string connectionString = "mongodb://localhost";
+
         public IMongoCollection<Mod> Mods { get; set; }
         public IMongoCollection<Item> Items { get; set; }
         public IMongoCollection<Recipe> Recipes { get; set; }
 
-        public DatabaseConnection(string connectionString)
+        public DatabaseConnection()
         {
             // Register a convention to ignore nulls
             var pack = new ConventionPack { new IgnoreIfNullConvention(true) };

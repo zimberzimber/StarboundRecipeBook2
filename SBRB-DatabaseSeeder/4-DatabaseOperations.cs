@@ -1,56 +1,57 @@
-﻿using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using SBRB.Database;
 using SBRB.Models;
-using System;
+using SBRB_DatabaseSeeder.Workers;
+using System.Threading.Tasks;
 
 namespace SBRB.Seeder
 {
     partial class Program
     {
-        const string MOD_REMOVAL_QUERY = @"delete from Mods where SteamId = {0};
-delete from ActiveItemDatas where SourceModId = {0};
-delete from ConsumableDatas where SourceModId = {0};
-delete from Items where SourceModId = {0};
-delete from ObjectDatas where SourceModId = {0};
-delete from RecipeInputs where SourceModId = {0};
-delete from Recipes where SourceModId = {0};
-delete from RecipeUnlocks where UnlockingItemSourceModId = {0};
-delete from Relationship_Recipe_RecipeGroup where SourceModId = {0};";
-
         static DatabaseConnection _db;
 
         static void GetDatabaseConnection()
-        {
-            _db = new DatabaseConnection("mongodb://localhost");
-        }
+            => _db = new DatabaseConnection();
 
         static void RemoveModFromDB(uint modId)
         {
-            Console.WriteLine("Removing Items...");
+            Logging.Log("Removing old entries for mod {0}...", modId);
+
             var itemFilter = Builders<Item>.Filter.Eq(i => i.ID.SourceModId, modId);
-            var itemResult = _db.Items.DeleteMany(itemFilter);
-            Console.WriteLine(string.Format("Item result: {0}", itemResult.IsAcknowledged ? itemResult.DeletedCount.ToString() : "Didn't work"));
+            var itemTask = _db.Items.DeleteManyAsync(itemFilter);
 
-            Console.WriteLine("Removing Recipes...");
             var recipeFilter = Builders<Recipe>.Filter.Eq(r => r.ID.SourceModId, modId);
-            var recipeResult = _db.Recipes.DeleteMany(recipeFilter);
-            Console.WriteLine(string.Format("Recipe result: {0}", recipeResult.IsAcknowledged ? recipeResult.DeletedCount.ToString() : "Didn't work"));
+            var recipeTask = _db.Recipes.DeleteManyAsync(recipeFilter);
 
-            Console.WriteLine("Removing Mod...");
-            var modResult = _db.Mods.DeleteOne(m => m.SteamId == modId);
-            Console.WriteLine(string.Format("Mod result: {0}", modResult.IsAcknowledged ? modResult.DeletedCount.ToString() : "Didn't work"));
+            var modTask = _db.Mods.DeleteOneAsync(m => m.SteamId == modId);
+
+            Task.WaitAll(itemTask, recipeTask, modTask);
+
+            Logging.Log("Done removing old entries.");
         }
 
         static void AddToDatabase()
         {
+            Logging.Log("Adding new entries...");
+
+            Task itemTask;
+            Task recipeTask;
+
             if (_DBItems.Count > 0)
-                _db.Items.InsertMany(_DBItems);
+                itemTask = _db.Items.InsertManyAsync(_DBItems);
+            else
+                itemTask = Task.CompletedTask;
 
             if (_DBRecipes.Count > 0)
-                _db.Recipes.InsertMany(_DBRecipes);
+                recipeTask = _db.Recipes.InsertManyAsync(_DBRecipes);
+            else
+                recipeTask = Task.CompletedTask;
 
-            _db.Mods.InsertOne(_mod);
+            Task modTask = _db.Mods.InsertOneAsync(_mod);
+
+            Task.WaitAll(itemTask, recipeTask, modTask);
+
+            Logging.Log("Done adding new entries.");
         }
     }
 }

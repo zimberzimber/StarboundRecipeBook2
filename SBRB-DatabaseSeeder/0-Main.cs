@@ -1,6 +1,7 @@
 ﻿using Jil;
 using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
+using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.IO;
 
@@ -8,113 +9,115 @@ using System.IO;
 // Certain edge cases may be discovered and not resolved yet.
 // Look for them via Ctrl + F 'EDGE CASE' through the entire project
 
-// NOTE:
-// Raw queries seem to be faster. Should try using them when pulling data instead of throught EF core
-
 // Add currency
-// Add thrownitem
-// Add blocks
-// Add liquids
 
 // To tell whether a currency is used in a crafting recipe, first check if a currency exists with that name, and only then check items
 namespace SBRB.Seeder
 {
     partial class Program
     {
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
+        const string BASE_GAME_ASSETS_STEAM_ID = "0";
 
         static void Main(string[] args)
         {
-            for (int i = 0; i < args.Length; i++)
-            {
-                Console.WriteLine(args[i]);
-            }
-            // Create a file to contain the logged messages
-            Directory.CreateDirectory("logs");
-            logFile = File.Create("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
+            //for (int i = 0; i < args.Length; i++)
+            //{ Console.WriteLine(args[i]);}
 
             JSON.SetDefaultOptions(Options.ExcludeNulls);
-
             string metaString;
 
-            if (File.Exists($"{modPath}\\.metadata"))
-                metaString = File.ReadAllText($"{modPath}\\.metadata");
-            else if (File.Exists($"{modPath}\\_metadata"))
-                metaString = File.ReadAllText($"{modPath}\\_metadata");
-            else
+            try
             {
-                Log("No metadata file detected.");
-                Console.ReadKey();
-                return;
-            }
-
-            Metadata meta = JSON.Deserialize<Metadata>(metaString);
-
-            if (string.IsNullOrWhiteSpace(meta.steamContentId))
-            {
-                if (meta.author == "Chucklefish" && meta.name == "base")
-                {
-                    Log("Base game assets. ID is set to -1.");
-                    meta.steamContentId = "-1";
-                }
+                if (File.Exists($"{modPath}\\.metadata"))
+                    metaString = File.ReadAllText($"{modPath}\\.metadata");
+                else if (File.Exists($"{modPath}\\_metadata"))
+                    metaString = File.ReadAllText($"{modPath}\\_metadata");
                 else
                 {
-                    Log("No Steam ID detected. Press any key to exit program.");
+                    Logging.Log("No metadata file detected.");
+                    Logging.Log("Press any key to exit...");
                     Console.ReadKey();
                     return;
                 }
-            }
-            else
-                Log($"Accepted mod with Steam ID {meta.steamContentId}");
 
-            _mod = meta.ToMod();
+                Metadata meta = JSON.Deserialize<Metadata>(metaString);
 
-            Log("----------------------------------------");
-            Log("Scanning and sorting mod files...");
-            Log();
-            ScanFiles(modPath);
+                if (string.IsNullOrWhiteSpace(meta.steamContentId))
+                {
+                    if (meta.author == "Chucklefish" && meta.name == "base")
+                    {
+                        Logging.Log("Base game assets. ID is set to {0}.", BASE_GAME_ASSETS_STEAM_ID);
+                        meta.steamContentId = BASE_GAME_ASSETS_STEAM_ID;
+                    }
+                    else
+                    {
+                        Logging.Log("No Steam ID detected. Press any key to exit program.");
+                        Console.ReadKey();
+                        return;
+                    }
+                }
+                else
+                    Logging.Log($"Accepted mod with Steam ID {meta.steamContentId}");
+                Logging.Log();
 
-            Log("----------------------------------------");
-            Log("Building item and recipe lists...");
-            Log();
-            BuildItemList();
-            BuildRecipeList();
+                _mod = meta.ToMod();
 
-            Log("----------------------------------------");
-            Log("Converting to DB models...");
-            Log();
-            ConvertToDBItems();
-            ConvertToDBRecipes();
+                Logging.Log("----------------------------------------");
+                Logging.Log("Scanning and sorting mod files...");
+                Logging.Log();
+                ScanFiles(modPath);
 
-            Log();
-            if (_warningMessages.Count > 0)
-            {
-                for (int i = 0; i < _warningMessages.Count; i++)
-                { Log(_warningMessages[i]); }
+                Logging.Log("----------------------------------------");
+                Logging.Log("Building item and recipe lists...");
+                Logging.Log();
+                BuildItemList();
+                BuildRecipeList();
 
-                Log("Warnings present. Press any key to continue...");
+                Logging.Log("----------------------------------------");
+                Logging.Log("Converting to DB models...");
+                Logging.Log();
+                ConvertToDBItems();
+                ConvertToDBRecipes();
+
+                Logging.Log("----------------------------------------");
+                bool hasWarnings = Logging.PrintWarnings(true);
+                if (hasWarnings)
+                {
+                    Logging.Log("Warnings present. Press any key to continue...");
+                    Console.ReadKey();
+                }
+                else
+                    Logging.Log("No warnings, proceeding...");
+                Logging.Log();
+
+                Logging.Log("----------------------------------------");
+                Logging.Log("Creating database connection...");
+                Logging.Log();
+                GetDatabaseConnection();
+
+                Logging.Log("----------------------------------------");
+                Logging.Log();
+                RemoveModFromDB(_mod.SteamId);
+                Logging.Log();
+
+                Logging.Log("----------------------------------------");
+                Logging.Log();
+                AddToDatabase();
+                Logging.Log();
+
+                Logging.Log("----------------------------------------");
+                Logging.Log("All done!");
+                Logging.Log("Press any key to exit the progmram...");
                 Console.ReadKey();
             }
-            else
-                Log("No warnings, proceeding...");
-
-            Log("----------------------------------------");
-            Log("Connecting to database...");
-            Log();
-            GetDatabaseConnection();
-
-            Log("----------------------------------------");
-            Log("Removing old mod records from database...");
-            Log();
-            RemoveModFromDB(_mod.SteamId);
-
-            Log("----------------------------------------");
-            Log("Adding new records to database...");
-            Log();
-            AddToDatabase();
+            catch (Exception e)
+            { Logging.Log(e.Message); }
+            finally
+            { Logging.StopLogging(); }
         }
     }
 }

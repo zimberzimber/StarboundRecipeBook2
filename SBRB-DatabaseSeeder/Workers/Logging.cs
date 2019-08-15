@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 
 namespace SBRB_DatabaseSeeder.Workers
@@ -13,7 +12,7 @@ namespace SBRB_DatabaseSeeder.Workers
         public static bool DoneWroking { get; private set; } = false;
         static bool _keepLogging = true;
         static List<string> _warningMessages;
-        static FileStream _logFile;
+        static StreamWriter _logFile;
         static ConcurrentQueue<string> _messageQueque;
 
         static Logging()
@@ -22,7 +21,8 @@ namespace SBRB_DatabaseSeeder.Workers
             Directory.CreateDirectory("logs");
 
             // Create the log file
-            _logFile = File.Create("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
+            _logFile = new StreamWriter("logs\\" + DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".txt");
+            _logFile.AutoFlush = true;
 
             // Create the message queue for async log writing
             _messageQueque = new ConcurrentQueue<string>();
@@ -140,19 +140,8 @@ namespace SBRB_DatabaseSeeder.Workers
 
                 bool dequeued = _messageQueque.TryDequeue(out string message);
                 if (dequeued)
-                    WriteToFile(message);
+                    _logFile.WriteLine(message);
             }
-        }
-
-        /// <summary>
-        /// Writes the logged messages into the log file.
-        /// </summary>
-        /// <param name="message">The message to write into the file</param>
-        static void WriteToFile(string message)
-        {
-            byte[] buffer = new UTF8Encoding(true).GetBytes($"\n{message}");
-            _logFile.Write(buffer, 0, buffer.Length);
-            _logFile.Flush();
         }
     }
 }

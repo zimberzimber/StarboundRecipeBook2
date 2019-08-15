@@ -1,9 +1,11 @@
 ﻿using SBRB.Seeder.Workers;
 using SBRB_DatabaseSeeder.Workers;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SBRB.Seeder
 {
@@ -16,19 +18,30 @@ namespace SBRB.Seeder
             ".tillingtool", ".augment", ".currency", ".instrument", ".liquid",
             ".matitem", ".throwitem" };
 
-        static List<string> _itemFiles = new List<string>();
-        static List<string> _recipeFiles = new List<string>();
+        static ConcurrentQueue<string> _itemFiles = new ConcurrentQueue<string>();
+        static ConcurrentQueue<string> _recipeFiles = new ConcurrentQueue<string>();
 
         static void ScanFiles(string path)
         {
             string[] directories = Directory.GetDirectories(path);
             string[] files = Directory.GetFiles(path);
+            List<Task> tasks = new List<Task>();
 
-            for (int i = 0; i < directories.Length; i++)
-                ScanFiles(directories[i]);
+            foreach (var dir in directories)
+            {
+                var task = new Task(() => ScanFiles(dir));
+                tasks.Add(task);
+                task.Start();
+            }
 
-            for (int i = 0; i < files.Length; i++)
-                SortFile(files[i]);
+            foreach (var file in files)
+            {
+                var task = new Task(() => SortFile(file));
+                tasks.Add(task);
+                task.Start();
+            }
+
+            Task.WaitAll(tasks.ToArray());
         }
 
         static void SortFile(string file)
@@ -37,12 +50,12 @@ namespace SBRB.Seeder
 
             if (extension.Equals(".recipe"))
             {
-                _recipeFiles.Add(file);
+                _recipeFiles.Enqueue(file);
                 Logging.Log("Found recipe file:\t{0}", file.ToReletivePath(modPath));
             }
             else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
             {
-                _itemFiles.Add(file);
+                _itemFiles.Enqueue(file);
                 Logging.Log("Found item file:\t{0}", file.ToReletivePath(modPath));
             }
         }

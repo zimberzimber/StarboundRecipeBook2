@@ -16,8 +16,8 @@ namespace SBRB.Seeder
 {
     partial class Program
     {
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
+        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
+        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
         //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
         static Mod _mod;
         const string BASE_GAME_ASSETS_STEAM_ID = "0";
@@ -74,14 +74,12 @@ namespace SBRB.Seeder
                 Logging.Log("----------------------------------------");
                 Logging.Log("Building item and recipe lists...");
                 Logging.Log();
-                BuildItemList();
-                BuildRecipeList();
+                BuildQueues();
 
                 Logging.Log("----------------------------------------");
                 Logging.Log("Converting to DB models...");
                 Logging.Log();
-                ConvertToDBItems();
-                ConvertToDBRecipes();
+                ConvertToDBData();
 
                 Logging.Log("----------------------------------------");
                 bool hasWarnings = Logging.PrintWarnings(true);
@@ -100,24 +98,28 @@ namespace SBRB.Seeder
                 GetDatabaseConnection();
 
                 Logging.Log("----------------------------------------");
-                Logging.Log();
                 RemoveModFromDB(_mod.SteamId);
                 Logging.Log();
 
                 Logging.Log("----------------------------------------");
-                Logging.Log();
                 AddToDatabase();
                 Logging.Log();
 
                 Logging.Log("----------------------------------------");
                 Logging.Log("All done!");
-                Logging.Log("Press any key to exit the progmram...");
-                Console.ReadKey();
             }
             catch (Exception e)
-            { Logging.Log(e.Message); }
+            {
+                Logging.Log("An error has occured:");
+                Logging.Log(e.Message);
+            }
             finally
-            { Logging.StopLogging(); }
+            {
+                Logging.StopLogging();
+            }
+
+            Logging.Log("Press any key to exit the progmram...");
+            Console.ReadKey();
         }
     }
 }

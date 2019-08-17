@@ -7,11 +7,11 @@ using SixLabors.Primitives;
 using System.Collections.Generic;
 using System.IO;
 
-namespace SBRB.Seeder.Workers
+namespace SBRB.Seeder.Extensions
 {
     /// <summary>Class housing an extension for layering an image over a subject, following Starbounds formats/methods.</summary>
     // Or at least what I think they are...
-    static class ImageBuilder
+    public static class ImageBuilder
     {
         static readonly Dictionary<ArmorTypes, int[]> ARMOR_FRAME_COORDS = new Dictionary<ArmorTypes, int[]>
         {

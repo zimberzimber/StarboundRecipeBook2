@@ -1,6 +1,6 @@
 ﻿using Jil;
 using SBRB.Models;
-using SBRB.Seeder.Workers;
+using SBRB.Seeder.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
@@ -44,7 +44,7 @@ namespace SBRB.Seeder.DeserializedData
             // RESULT: Not going to account for that, as its also incorrect usage in Starbounds case.
 
             // EDGE CASE: The image the item is pointing at does not exist in its mod.
-            // RESULT: The image will be use the missing asset placeholder
+            // RESULT: The image will use the missing asset placeholder
 
             using (Image<Rgba32> fullImage = new Image<Rgba32>(1, 1))
             {
@@ -54,7 +54,7 @@ namespace SBRB.Seeder.DeserializedData
                     return null;
 
                 // If the image is composite, run 'AddLayer' on each piece.
-                if (inventoryIcon.ToString().Contains("[{")) // Collection of paths
+                if (inventoryIcon.ToString().Contains("[{")) // Collection of paths (Hacky, but dynamic objects are ass :v)
                 {
                     string[] componentsJSON = inventoryIcon.ToString().Replace("[", "").Replace("]", "").Split(',');
 

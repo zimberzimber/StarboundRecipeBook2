@@ -1,4 +1,4 @@
-﻿using SBRB.Seeder.Workers;
+﻿using SBRB.Seeder.Extensions;
 using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.Collections.Concurrent;
@@ -11,6 +11,7 @@ namespace SBRB.Seeder
 {
     partial class Program
     {
+        // Array telling the program which extensions are to be considered as items
         static readonly string[] ACCEPTABLE_ITEM_EXTENSIONS = new string[]
         {   ".item", ".object", ".activeitem", ".legs", ".chest", ".head",
             ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
@@ -18,15 +19,29 @@ namespace SBRB.Seeder
             ".tillingtool", ".augment", ".currency", ".instrument", ".liquid",
             ".matitem", ".throwitem" };
 
+        // String telling the program which extension is to be considered as a recipe
+        const string RECIPE_FILE_EXTENSION = ".recipe";
+
+        // Queues containing discovered items and recipes
         static ConcurrentQueue<string> _itemFiles = new ConcurrentQueue<string>();
         static ConcurrentQueue<string> _recipeFiles = new ConcurrentQueue<string>();
 
-        static void ScanFiles(string path)
+        /// <summary>
+        /// Recursive function iterating through files and folders within the given directory.
+        /// Folders have this method applied to them.
+        /// Files have the SortFile method aplied to them.
+        /// </summary>
+        /// <param name="directory">The directory to iterate over</param>
+        static void ScanFiles(string directory)
         {
-            string[] directories = Directory.GetDirectories(path);
-            string[] files = Directory.GetFiles(path);
+            // Get directories and files within the current directory
+            string[] directories = Directory.GetDirectories(directory);
+            string[] files = Directory.GetFiles(directory);
+
+            // Create a list containing all the tasks initialized within this stack.
             List<Task> tasks = new List<Task>();
 
+            // Create, index, and start tasks to run the same method on all the subdirectories
             foreach (var dir in directories)
             {
                 var task = new Task(() => ScanFiles(dir));
@@ -34,6 +49,7 @@ namespace SBRB.Seeder
                 task.Start();
             }
 
+            // Create, index, and start tasks to sort files within the current directory
             foreach (var file in files)
             {
                 var task = new Task(() => SortFile(file));
@@ -41,22 +57,30 @@ namespace SBRB.Seeder
                 task.Start();
             }
 
+            // Wait for the tasks to complete
             Task.WaitAll(tasks.ToArray());
         }
 
+        /// <summary>
+        /// Method receiving a file, and adding it into an item or recipe queue should it fit the requirements.
+        /// </summary>
+        /// <param name="file">Path to file</param>
         static void SortFile(string file)
         {
+            // Get the files extension
             string extension = Path.GetExtension(file);
 
-            if (extension.Equals(".recipe"))
+            // Check whether the files extension falls under a recipe or item category, and add them into the appropriate queue.
+            // Do nothing if its an unaccaptable extension.
+            if (extension.Equals(RECIPE_FILE_EXTENSION))
             {
                 _recipeFiles.Enqueue(file);
-                Logging.Log("Found recipe file:\t{0}", file.ToReletivePath(modPath));
+                Logging.Log("Found recipe file:\t{0}", file.TrimPath(modPath));
             }
             else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
             {
                 _itemFiles.Enqueue(file);
-                Logging.Log("Found item file:\t{0}", file.ToReletivePath(modPath));
+                Logging.Log("Found item file:\t{0}", file.TrimPath(modPath));
             }
         }
     }

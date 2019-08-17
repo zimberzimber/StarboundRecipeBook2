@@ -82,7 +82,7 @@ namespace SBRB.Seeder
                 ConvertToDBData();
 
                 Logging.Log("----------------------------------------");
-                bool hasWarnings = Logging.PrintWarnings(true);
+                bool hasWarnings = Logging.PrintWarnings();
                 if (hasWarnings)
                 {
                     Logging.Log("Warnings present. Press any key to continue...");

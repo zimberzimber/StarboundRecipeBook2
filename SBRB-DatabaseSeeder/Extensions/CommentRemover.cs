@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace SBRB.Seeder.Workers
+namespace SBRB.Seeder.Extensions
 {
-    static class CommentRemover
+    public static class CommentRemover
     {
         // Used to remove comments from the files as JSON de/serializers do not inherently support commenting
         // Single line comment regex:		[/]+[/](.*?)[\n]

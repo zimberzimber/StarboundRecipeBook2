@@ -50,7 +50,7 @@ namespace SBRB.Seeder
         /// <param name="file">Path to file</param>
         static void ProcessItem(string file)
         {
-            Logging.Log("Processing item: {0}", file.TrimPath(modPath));
+            _logger.Log("Processing item: {0}", file.TrimPath(modPath));
 
             // Create a placeholder for the deserialized item
             DeserializedItem item = null;
@@ -143,7 +143,7 @@ namespace SBRB.Seeder
                     break;
 
                 default:
-                    Logging.AddWarning("No handling method for item: {0}", file.TrimPath(modPath));
+                    _logger.AddWarning("No handling method for item: {0}", file.TrimPath(modPath));
                     break;
             }
 
@@ -162,7 +162,7 @@ namespace SBRB.Seeder
         /// <param name="file">Path to file</param>
         static void ProcessRecipe(string file)
         {
-            Logging.Log("Deserializing recipe: {0}", file.TrimPath(modPath));
+            _logger.Log("Deserializing recipe: {0}", file.TrimPath(modPath));
 
             // Deserialize the recipe file
             string json = File.ReadAllText(file).RemoveComments();

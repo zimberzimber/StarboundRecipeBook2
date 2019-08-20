@@ -60,7 +60,7 @@ namespace SBRB.Seeder
         /// <param name="dItem">The item to convert</param>
         static void ConvertItem(DeserializedItem dItem)
         {
-            Logging.Log("Converting item: {0}", dItem.filePath.TrimPath(modPath));
+            _logger.Log("Converting item: {0}", dItem.filePath.TrimPath(modPath));
 
             // Create the database appropriate item
             Item item = new Item { ID = new CompositeItemId { SourceModId = _mod.SteamId } };
@@ -208,7 +208,7 @@ namespace SBRB.Seeder
         /// <param name="dRecipe">The recipe to convert</param>
         static void ConvertRecipe(DeserializedRecipe dRecipe)
         {
-            Logging.Log("Converting recipe: {0}", dRecipe.filePath.TrimPath(modPath));
+            _logger.Log("Converting recipe: {0}", dRecipe.filePath.TrimPath(modPath));
 
             // Create the database appropriate recipe
             Recipe recipe = new Recipe { ID = new CompositeRecipeId { SourceModId = _mod.SteamId } }; ;

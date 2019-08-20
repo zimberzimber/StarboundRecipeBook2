@@ -75,12 +75,12 @@ namespace SBRB.Seeder
             if (extension.Equals(RECIPE_FILE_EXTENSION))
             {
                 _recipeFiles.Enqueue(file);
-                Logging.Log("Found recipe file:\t{0}", file.TrimPath(modPath));
+                _logger.Log("Found recipe file:\t{0}", file.TrimPath(modPath));
             }
             else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
             {
                 _itemFiles.Enqueue(file);
-                Logging.Log("Found item file:\t{0}", file.TrimPath(modPath));
+                _logger.Log("Found item file:\t{0}", file.TrimPath(modPath));
             }
         }
     }

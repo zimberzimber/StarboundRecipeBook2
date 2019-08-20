@@ -22,7 +22,7 @@ namespace SBRB.Seeder
         /// <param name="modId">The mod whose data should be removed.</param>
         static void RemoveModFromDB(uint modId)
         {
-            Logging.Log("Removing old entries for mod {0}...", modId);
+            _logger.Log("Removing old entries for mod {0}...", modId);
 
             // Remove items who's ID.SourceModId matches the received ID
             var itemFilter = Builders<Item>.Filter.Eq(i => i.ID.SourceModId, modId);
@@ -38,7 +38,7 @@ namespace SBRB.Seeder
             // Wait for the removal tasks to complete
             Task.WaitAll(itemTask, recipeTask, modTask);
 
-            Logging.Log("Done removing old entries.");
+            _logger.Log("Done removing old entries.");
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace SBRB.Seeder
         /// </summary>
         static void AddToDatabase()
         {
-            Logging.Log("Adding new entries...");
+            _logger.Log("Adding new entries...");
 
             // Placeholders for insertion tasks
             Task itemTask;
@@ -70,7 +70,7 @@ namespace SBRB.Seeder
             // Wait for the insertion tasks to complete.
             Task.WaitAll(itemTask, recipeTask, modTask);
 
-            Logging.Log("Done adding new entries.");
+            _logger.Log("Done adding new entries.");
         }
     }
 }

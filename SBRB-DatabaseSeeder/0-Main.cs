@@ -1,6 +1,7 @@
 ﻿using Jil;
 using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
+using SBRB_DatabaseSeeder;
 using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.IO;
@@ -16,16 +17,24 @@ namespace SBRB.Seeder
 {
     partial class Program
     {
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\Ztarbound";
-        public static string modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
-        //public static string modPath = @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets";
-        static Mod _mod;
         const string BASE_GAME_ASSETS_STEAM_ID = "0";
+
+        public static string modPath;
+        static Mod _mod;
+        static Logger _logger = Logger.Instance;
 
         static void Main(string[] args)
         {
-            //for (int i = 0; i < args.Length; i++)
-            //{ Console.WriteLine(args[i]);}
+            if (args == null || args.Length < 1)
+            {
+                _logger.Log("Program started without any arguements.");
+                _logger.Log("Press any key to exit the program.");
+                Console.ReadKey();
+                return;
+            }
+
+            modPath = args[0];
+            //modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
 
             JSON.SetDefaultOptions(Options.ExcludeNulls);
             string metaString;
@@ -38,8 +47,8 @@ namespace SBRB.Seeder
                     metaString = File.ReadAllText($"{modPath}\\_metadata");
                 else
                 {
-                    Logging.Log("No metadata file detected.");
-                    Logging.Log("Press any key to exit...");
+                    _logger.Log("No metadata file detected.");
+                    _logger.Log("Press any key to exit...");
                     Console.ReadKey();
                     return;
                 }
@@ -50,75 +59,70 @@ namespace SBRB.Seeder
                 {
                     if (meta.author == "Chucklefish" && meta.name == "base")
                     {
-                        Logging.Log("Base game assets. ID is set to {0}.", BASE_GAME_ASSETS_STEAM_ID);
+                        _logger.Log("Base game assets. ID is set to {0}.", BASE_GAME_ASSETS_STEAM_ID);
                         meta.steamContentId = BASE_GAME_ASSETS_STEAM_ID;
                     }
                     else
                     {
-                        Logging.Log("No Steam ID detected. Press any key to exit program.");
+                        _logger.Log("No Steam ID detected. Press any key to exit program.");
                         Console.ReadKey();
                         return;
                     }
                 }
                 else
-                    Logging.Log($"Accepted mod with Steam ID {meta.steamContentId}");
-                Logging.Log();
+                    _logger.Log($"Accepted mod with Steam ID {meta.steamContentId}");
+                _logger.Log();
 
                 _mod = meta.ToMod();
 
-                Logging.Log("----------------------------------------");
-                Logging.Log("Scanning and sorting mod files...");
-                Logging.Log();
+                _logger.Log("----------------------------------------");
+                _logger.Log("Scanning and sorting mod files...");
+                _logger.Log();
                 ScanFiles(modPath);
 
-                Logging.Log("----------------------------------------");
-                Logging.Log("Building item and recipe lists...");
-                Logging.Log();
+                _logger.Log("----------------------------------------");
+                _logger.Log("Building item and recipe lists...");
+                _logger.Log();
                 BuildQueues();
 
-                Logging.Log("----------------------------------------");
-                Logging.Log("Converting to DB models...");
-                Logging.Log();
+                _logger.Log("----------------------------------------");
+                _logger.Log("Converting to DB models...");
+                _logger.Log();
                 ConvertToDBData();
 
-                Logging.Log("----------------------------------------");
-                bool hasWarnings = Logging.PrintWarnings();
+                _logger.Log("----------------------------------------");
+                bool hasWarnings = _logger.PrintWarnings();
                 if (hasWarnings)
                 {
-                    Logging.Log("Warnings present. Press any key to continue...");
+                    _logger.Log("Warnings present. Press any key to continue...");
                     Console.ReadKey();
                 }
                 else
-                    Logging.Log("No warnings, proceeding...");
-                Logging.Log();
+                    _logger.Log("No warnings, proceeding...");
+                _logger.Log();
 
-                Logging.Log("----------------------------------------");
-                Logging.Log("Creating database connection...");
-                Logging.Log();
+                _logger.Log("----------------------------------------");
+                _logger.Log("Creating database connection...");
+                _logger.Log();
                 GetDatabaseConnection();
 
-                Logging.Log("----------------------------------------");
+                _logger.Log("----------------------------------------");
                 RemoveModFromDB(_mod.SteamId);
-                Logging.Log();
+                _logger.Log();
 
-                Logging.Log("----------------------------------------");
+                _logger.Log("----------------------------------------");
                 AddToDatabase();
-                Logging.Log();
+                _logger.Log();
 
-                Logging.Log("----------------------------------------");
-                Logging.Log("All done!");
+                _logger.Log("----------------------------------------");
+                _logger.Log("All done!");
             }
             catch (Exception e)
             {
-                Logging.Log("An error has occured:");
-                Logging.Log(e.Message);
+                _logger.Log("\tAn error has occured:");
+                _logger.Log(e.Message);
             }
-            finally
-            {
-                Logging.StopLogging();
-            }
-
-            Logging.Log("Press any key to exit the progmram...");
+            _logger.Log("Press any key to exit the program...");
             Console.ReadKey();
         }
     }

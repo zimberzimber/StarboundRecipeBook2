@@ -25,6 +25,11 @@ namespace SBRB.Seeder
 
         static void Main(string[] args)
         {
+#if DEBUG
+            Console.WriteLine("Debug mode. Setting Frackin' Universe as target.");
+            args = new string[] { @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master" };
+#endif
+
             if (args == null || args.Length < 1)
             {
                 _logger.Log("Program started without any arguements.");
@@ -34,7 +39,6 @@ namespace SBRB.Seeder
             }
 
             modPath = args[0];
-            //modPath = @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master";
 
             JSON.SetDefaultOptions(Options.ExcludeNulls);
             string metaString;

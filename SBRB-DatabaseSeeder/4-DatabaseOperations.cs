@@ -14,7 +14,7 @@ namespace SBRB.Seeder
         /// Get the database connection.
         /// </summary>
         static void GetDatabaseConnection()
-            => _db = new DatabaseConnection();
+            => _db = DatabaseConnection.Instance;
 
         /// <summary>
         /// Remove all entries for the given mod ID.

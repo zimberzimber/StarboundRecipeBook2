@@ -10,11 +10,14 @@ namespace SBRB.Database
         // TO DO: Move this to a separate file
         const string CONNECTION_STRING = "mongodb://localhost";
 
+        // Database connection config file
+        const string CONNECTION_FILE_PATH = "DatabaseConnection.config";
+
         // Default millisecond time for a pings timeout
         const int DEFAULT_PING_TIMEOUT = 3000;
 
-        // Store the client reference for pinging
-        MongoClient _client;
+        // Store the database reference for pinging
+        IMongoDatabase _database;
 
         // Properties containing the collections
         public IMongoCollection<Mod> Mods { get; private set; }
@@ -45,13 +48,13 @@ namespace SBRB.Database
             ConventionRegistry.Register("remove nulls", pack, t => true);
 
             // connect to the database
-            _client = new MongoClient(CONNECTION_STRING);
-            var database = _client.GetDatabase("test");
+            var client = new MongoClient(CONNECTION_STRING);
+            _database = client.GetDatabase("test");
 
             // Bind the collections
-            Mods = database.GetCollection<Mod>("mods");
-            Items = database.GetCollection<Item>("items");
-            Recipes = database.GetCollection<Recipe>("recipes");
+            Mods = _database.GetCollection<Mod>("mods");
+            Items = _database.GetCollection<Item>("items");
+            Recipes = _database.GetCollection<Recipe>("recipes");
         }
 
         /// <summary>
@@ -60,9 +63,6 @@ namespace SBRB.Database
         /// <param name="timeout">Milliseconds to wait for an answer.</param>
         /// <returns>Whether the ping was succesful.</returns>
         public bool Ping(int timeout = DEFAULT_PING_TIMEOUT)
-        {
-            var database = _client.GetDatabase("test");
-            return database.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(timeout);
-        }
+            => _database.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(timeout);
     }
 }

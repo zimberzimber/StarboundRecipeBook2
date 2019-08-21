@@ -1,29 +1,17 @@
 ﻿using MongoDB.Driver;
-using SBRB.Database;
 using SBRB.Models;
-using SBRB_DatabaseSeeder.Workers;
 using System.Threading.Tasks;
 
 namespace SBRB.Seeder
 {
     partial class Program
     {
-        static DatabaseConnection _db;
-
-        /// <summary>
-        /// Get the database connection.
-        /// </summary>
-        static void GetDatabaseConnection()
-            => _db = DatabaseConnection.Instance;
-
         /// <summary>
         /// Remove all entries for the given mod ID.
         /// </summary>
         /// <param name="modId">The mod whose data should be removed.</param>
         static void RemoveModFromDB(uint modId)
         {
-            _logger.Log("Removing old entries for mod {0}...", modId);
-
             // Remove items who's ID.SourceModId matches the received ID
             var itemFilter = Builders<Item>.Filter.Eq(i => i.ID.SourceModId, modId);
             var itemTask = _db.Items.DeleteManyAsync(itemFilter);
@@ -46,8 +34,6 @@ namespace SBRB.Seeder
         /// </summary>
         static void AddToDatabase()
         {
-            _logger.Log("Adding new entries...");
-
             // Placeholders for insertion tasks
             Task itemTask;
             Task recipeTask;

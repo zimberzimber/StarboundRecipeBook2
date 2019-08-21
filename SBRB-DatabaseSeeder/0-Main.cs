@@ -72,7 +72,7 @@ namespace SBRB.Seeder
                     ExitPrompt();
                     return;
                 }
-                _logger("Connected to database...");
+                _logger.Log("Connected to database...");
 
                 // Deserialize the metadata
                 Metadata meta = JSON.Deserialize<Metadata>(metaString);

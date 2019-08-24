@@ -10,8 +10,6 @@ using System.IO;
 // Certain edge cases may be discovered and not resolved yet.
 // Look for them via Ctrl + F 'EDGE CASE' through the entire project
 
-// Add currency
-
 // To tell whether a currency is used in a crafting recipe, first check if a currency exists with that name, and only then check items
 namespace SBRB.Seeder
 {

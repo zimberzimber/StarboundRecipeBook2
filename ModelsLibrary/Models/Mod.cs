@@ -11,17 +11,17 @@ namespace SBRB.Models
         const string STEAM_PAGE_URL = "https://steamcommunity.com/sharedfiles/filedetails/?id={0}";
 
         [BsonId]
-        public uint SteamId { get; set; }
+        public uint SteamId;
 
-        public string FriendlyName { get; set; }
+        public string FriendlyName;
 
-        public string InternalName { get; set; }
+        public string InternalName;
 
-        public string Author { get; set; }
+        public string Author;
 
-        public string Version { get; set; }
+        public string Version;
 
-        public DateTime LastUpdated { get; set; }
+        public DateTime LastUpdated;
 
         public string SteamPageLink { get { return string.Format(STEAM_PAGE_URL, SteamId); } }
     }

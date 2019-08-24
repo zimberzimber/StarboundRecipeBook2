@@ -5,10 +5,9 @@ namespace SBRB.Models
     /// <summary>
     /// Class used to compose a recipes unique ID within the database
     /// </summary>
-    public class CompositeRecipeId
+    public class CompositeRecipeId:ModDependant
     {
-        public uint SourceModId { get; set; }
-        public uint RecipeId { get; set; }
+        public uint RecipeId;
     }
 
     /// <summary>
@@ -16,8 +15,8 @@ namespace SBRB.Models
     /// </summary>
     public class RecipeInputs
     {
-        public string ItemName { get; set; }
-        public int Count { get; set; }
+        public string ItemName;
+        public int Count;
     }
 
     /// <summary>
@@ -26,14 +25,14 @@ namespace SBRB.Models
     public class Recipe
     {
         [BsonId]
-        public CompositeRecipeId ID { get; set; }
+        public CompositeRecipeId ID;
 
-        public string FilePath { get; set; }
-        public string[] RecipeGroups { get; set; }
+        public string FilePath;
+        public string[] RecipeGroups;
 
-        public string OutputItemName { get; set; }
-        public int OutputCount { get; set; }
+        public string OutputItemName;
+        public int OutputCount;
 
-        public RecipeInputs[] Inputs { get; set; }
+        public RecipeInputs[] Inputs;
     }
 }

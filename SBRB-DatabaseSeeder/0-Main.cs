@@ -22,17 +22,20 @@ namespace SBRB.Seeder
         // Reference to class handling database connection
         static DatabaseConnection _db = DatabaseConnection.Instance;
 
+        static DateTime startTime;
+
         public static string modPath;
         static Mod _mod;
         static Logger _logger = Logger.Instance;
 
         static void Main(string[] args)
         {
+            startTime = DateTime.Now;
 #if DEBUG
-            _logger.Log("Debug mode. Setting Frackin' Universe as target.");
-            args = new string[] { @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master" };
+            _logger.Log("Debug mode. Setting pre-defined default as target.");
+            args = new string[] { @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets" };
+            //args = new string[] { @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master" };
 #endif
-
             // Ping the database to check whethers there's a connection to it before doing any work
             _logger.Log("Pinging database for connection...");
             if (!_db.Ping())
@@ -116,6 +119,21 @@ namespace SBRB.Seeder
                 _logger.Log();
                 ConvertToDBData();
 
+
+                // Deserialize the currency file if its base game assets, otherwise deserialize the patch file
+                _logger.Log("----------------------------------------");
+                if (meta.steamContentId == BASE_GAME_ASSETS_STEAM_ID)
+                {
+                    _logger.Log("Deserializing currency file...");
+                    DeserializeCurrency();
+                }
+                else
+                {
+                    _logger.Log("Deserializing currency patch file...");
+                    DeserializeCurrencyPatch();
+                }
+                _logger.Log();
+
                 // Print warnings. Continue if there are none, await player input if there are any.
                 _logger.Log("----------------------------------------");
                 bool hasWarnings = _logger.PrintWarnings();
@@ -152,12 +170,14 @@ namespace SBRB.Seeder
                 _logger.Log();
 
                 _logger.Log("----------------------------------------");
-                _logger.Log("All done!");
+                _logger.Log("Jobs done!");
+                _logger.Log("And it only took {0} seconds!", (DateTime.Now - startTime).TotalSeconds);
             }
             catch (Exception e)
             {
                 _logger.Log("\tAn exception has occured:");
                 _logger.Log(e.Message);
+                _logger.Log(e.StackTrace);
             }
 
             ExitPrompt();
@@ -168,7 +188,7 @@ namespace SBRB.Seeder
         /// </summary>
         static void ExitPrompt()
         {
-            Console.WriteLine("Press any key to exit the program...");
+            Console.WriteLine("Press any key to close the program...");
             Console.ReadKey();
         }
     }

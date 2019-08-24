@@ -23,6 +23,7 @@ namespace SBRB.Database
         public IMongoCollection<Mod> Mods { get; private set; }
         public IMongoCollection<Item> Items { get; private set; }
         public IMongoCollection<Recipe> Recipes { get; private set; }
+        public IMongoCollection<Currency> Currencies { get; private set; }
 
         // Singleton defenition
         static object _lock = new object();
@@ -55,6 +56,7 @@ namespace SBRB.Database
             Mods = _database.GetCollection<Mod>("mods");
             Items = _database.GetCollection<Item>("items");
             Recipes = _database.GetCollection<Recipe>("recipes");
+            Currencies = _database.GetCollection<Currency>("currencies");
         }
 
         /// <summary>

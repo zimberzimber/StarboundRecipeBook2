@@ -1,15 +1,18 @@
-﻿using System.Collections.Generic;
-
-namespace SBRB.Seeder.DeserializedData
+﻿namespace SBRB.Seeder.DeserializedData
 {
-    class DeserializedCurrencyCollection
-    {
-        public Dictionary<string, DeserializedCurrency> Collection { get; set; }
-    }
-
     class DeserializedCurrency
     {
-        public string representativeItem { get; set; }
-        public uint playerMax { get; set; }
+        public string representativeItem;
+        public uint playerMax;
     }
+
+    // Base game specific currency classes
+    class DeserializedBaseGameCurrencyFile
+    {
+        public DeserializedMoney money;
+        public DeserializedEssence essence;
+    }
+
+    class DeserializedMoney : DeserializedCurrency { }
+    class DeserializedEssence : DeserializedCurrency { }
 }

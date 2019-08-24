@@ -20,11 +20,15 @@ namespace SBRB.Seeder
             var recipeFilter = Builders<Recipe>.Filter.Eq(r => r.ID.SourceModId, modId);
             var recipeTask = _db.Recipes.DeleteManyAsync(recipeFilter);
 
+            // Remove currencies who's ID.SourceModId matches the received ID
+            var currencyFilter = Builders<Currency>.Filter.Eq(c => c.ID.SourceModId, modId);
+            var currencyTask = _db.Currencies.DeleteManyAsync(currencyFilter);
+
             // Remove the mod whos SteamId matches the received ID
             var modTask = _db.Mods.DeleteOneAsync(m => m.SteamId == modId);
 
             // Wait for the removal tasks to complete
-            Task.WaitAll(itemTask, recipeTask, modTask);
+            Task.WaitAll(itemTask, recipeTask, currencyTask, modTask);
 
             _logger.Log("Done removing old entries.");
         }
@@ -37,6 +41,7 @@ namespace SBRB.Seeder
             // Placeholders for insertion tasks
             Task itemTask;
             Task recipeTask;
+            Task currencyTask;
 
             // Asynchronously insert the items, or just create a complete task if there are no items to be added.
             if (_DBItems.Count > 0)
@@ -50,11 +55,17 @@ namespace SBRB.Seeder
             else
                 recipeTask = Task.CompletedTask;
 
+            // Asynchronously insert the currencies, or just create a complete task if there are no currencies to be added.
+            if (_DBCurrencies.Count > 0)
+                currencyTask = _db.Currencies.InsertManyAsync(_DBCurrencies);
+            else
+                currencyTask = Task.CompletedTask;
+
             // Asynchronously insert the mod.
             Task modTask = _db.Mods.InsertOneAsync(_mod);
 
             // Wait for the insertion tasks to complete.
-            Task.WaitAll(itemTask, recipeTask, modTask);
+            Task.WaitAll(itemTask, recipeTask, currencyTask, modTask);
 
             _logger.Log("Done adding new entries.");
         }

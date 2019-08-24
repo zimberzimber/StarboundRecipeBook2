@@ -2,18 +2,17 @@
 
 namespace SBRB.Models
 {
-    public class CompositeCurrencyId
+    public class CompositeCurrencyId : ModDependant
     {
-        public uint SourceModId { get; set; }
-        public string CurrencyName { get; set; }
+        public string CurrencyName;
     }
 
     public class Currency
     {
         [BsonId]
-        public int Id { get; set; }
+        public CompositeCurrencyId ID;
 
-        public string RepresentativeItem { get; set; }
-        public uint PlayerMax { get; set; }
+        public string RepresentativeItem;
+        public uint PlayerMax;
     }
 }

@@ -13,22 +13,22 @@ namespace SBRB.Seeder.DeserializedData
         // Nested class for composite icon deserialization.
         class CompositeIconComponent
         {
-            public string image { get; set; }
+            public string image;
         }
 
-        public string itemName { get; set; }
-        public string shortdescription { get; set; }
-        public string description { get; set; }
-        public string rarity { get; set; } = "common";
-        public string category { get; set; }
-        public uint? price { get; set; }
-        public uint? maxStack { get; set; }
-        public string tooltipKind { get; set; }
-        public dynamic inventoryIcon { get; set; }
-        public string[] learnBlueprintsOnPickup { get; set; }
-        public bool SBRBhidden { get; set; } = false;
+        public string itemName;
+        public string shortdescription;
+        public string description;
+        public string rarity = "common";
+        public string category;
+        public uint? price;
+        public uint? maxStack;
+        public string tooltipKind;
+        public dynamic inventoryIcon;
+        public string[] learnBlueprintsOnPickup;
+        public bool SBRBhidden = false;
 
-        public string filePath { get; set; }
+        public string filePath;
 
         public byte[] GenerateIconImage(ArmorTypes? armorType = null)
         {
@@ -93,9 +93,9 @@ namespace SBRB.Seeder.DeserializedData
 
     class DeserializedObject : DeserializedItem
     {
-        public string race { get; set; }
-        public bool? printable { get; set; }
-        public string[] colonyTags { get; set; }
+        public string race;
+        public bool? printable;
+        public string[] colonyTags;
 
         // Objects use 'objectName' instead of 'itemName'
         public string objectName { get => itemName; set => itemName = value; }
@@ -103,72 +103,72 @@ namespace SBRB.Seeder.DeserializedData
 
     class DeserializedConsumable : DeserializedItem
     {
-        public double? foodValue { get; set; }
+        public double? foodValue;
     }
 
     class DeserializedActiveItem : DeserializedItem
     {
-        public double? level { get; set; }
-        public bool? twoHanded { get; set; }
-        public string elementalType { get; set; }
+        public double? level;
+        public bool? twoHanded;
+        public string elementalType;
     }
 
     class DeserializedArmor : DeserializedItem
     {
-        public double? level { get; set; }
-        public ArmorTypes armorType { get; set; }
+        public double? level;
+        public ArmorTypes armorType;
     }
 
     class DeserializedFlashlight : DeserializedItem
     {
-        public byte[] lightColor { get; set; }
-        public double beamLevel { get; set; }
-        public double beamAmbience { get; set; }
+        public byte[] lightColor;
+        public double beamLevel;
+        public double beamAmbience;
     }
 
     class DeserializedTool : DeserializedItem
     {
-        public ToolTypes ToolType { get; set; }
+        public ToolTypes ToolType;
 
-        public uint? blockRadius { get; set; }
-        public bool? twoHanded { get; set; }
-        public double? fireTime { get; set; }
-        public double? tileDamage { get; set; }
-        public double? rangeBonus { get; set; }
+        public uint? blockRadius;
+        public bool? twoHanded;
+        public double? fireTime;
+        public double? tileDamage;
+        public double? rangeBonus;
 
-        public double? durability { get; set; }
-        public double? durabilityPerUse { get; set; }
+        public double? durability;
+        public double? durabilityPerUse;
     }
 
     class DeserializedAugment : DeserializedItem
     {
-        public DeserializedAugmentData augment { get; set; }
+        public DeserializedAugmentData augment;
     }
 
     // Starbound has the actual augment data stored in a table within the items definitions
     // It will be deserialized into this
     class DeserializedAugmentData
     {
-        public string type { get; set; }
-        public string name { get; set; }
-        public string displayName { get; set; }
-        public string displayIcon { get; set; }
+        public string type;
+        public string name;
+        public string displayName;
+        public string displayIcon;
     }
 
     class DeserializedCurrencyItem : DeserializedItem
     {
-        public string currency { get; set; }
-        public int value { get; set; }
+        public string currency;
+        public int value;
     }
 
     class DeserializedMaterialItem : DeserializedItem
     {
-        public uint materialId { get; set; }
+        public uint materialId;
     }
 
     class DeserializedLiquidItem : DeserializedItem
     {
-        public string liquid { get; set; }
+        public string liquid;
     }
 
     class DeserializedInstrument : DeserializedItem

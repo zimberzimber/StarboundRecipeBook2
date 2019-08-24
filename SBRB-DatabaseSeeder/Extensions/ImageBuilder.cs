@@ -26,23 +26,23 @@ namespace SBRB.Seeder.Extensions
         class FramesFile
         {
             /// <summary>Dictionary holding aliases for frames. [alias:frame]</summary>
-            public Dictionary<string, string> aliases { get; set; }
+            public Dictionary<string, string> aliases;
 
-            public Framegrid frameGrid { get; set; }
+            public Framegrid frameGrid;
 
             // Some things use a frame list for whatever reason...
-            public Dictionary<string, int[]> frameList { get; set; }
+            public Dictionary<string, int[]> frameList;
         }
 
         class Framegrid
         {
             /// <summary>Frame size [x,y]</summary>
-            public int[] size { get; set; }
+            public int[] size;
 
             /// <summary>Number of rows and columns [x,y]</summary>
-            public int[] dimensions { get; set; }
+            public int[] dimensions;
 
-            public string[][] names { get; set; }
+            public string[][] names;
         }
 
         // Because try/catch is heavier than a simple enum check.

@@ -1,14 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StarboundRecipeBook2.Models;
+using SBRB.Models;
 using System.Threading.Tasks;
 
 namespace StarboundRecipeBook2.ViewComponents
 {
-    public class ItemReference : ViewComponent
+    public class ItemReferenceViewComponent : ViewComponent
     {
         public Task<IViewComponentResult> InvokeAsync(Item item)
-        {
-            return Task.FromResult<IViewComponentResult>(View("Default", item));
-        }
+            => Task.FromResult<IViewComponentResult>(View("Default", item));
     }
 }

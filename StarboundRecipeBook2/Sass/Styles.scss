@@ -23,15 +23,42 @@ $header-height: 33px;
 	text-align: left;
 
 	tr {
-		th {
+		td {
 			vertical-align: top;
 			font-weight: unset;
 		}
 	}
 
-	.searchOptionsTableTitle {
+	.TableTitle {
 		text-align: center;
 		font-weight: bold;
+	}
+}
+
+.ModsTable {
+	text-align: left;
+	width: 1000px;
+	border-collapse: collapse;
+
+	tr {
+		border-collapse: collapse;
+
+		td {
+			border-left: 1px solid black;
+			border-right: 1px solid black;
+			border-collapse: collapse;
+			vertical-align: top;
+			font-weight: unset;
+			padding: 5px;
+		}
+	}
+
+	.TableTitle {
+		font-weight: bold;
+
+		td {
+			border-bottom: 1px solid black;
+		}
 	}
 }
 

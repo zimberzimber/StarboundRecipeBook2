@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StarboundRecipeBook2.Data;
-using StarboundRecipeBook2.Models;
+using SBRB.Models;
 using System.Collections.Generic;
 using System.Linq;
 

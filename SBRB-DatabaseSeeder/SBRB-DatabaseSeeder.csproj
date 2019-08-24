@@ -8,14 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Jil" Version="2.17.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0006" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta0006" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StarboundRecipeBook2\StarboundRecipeBook2.csproj" />
+    <ProjectReference Include="..\ModelsLibrary\SBRB-Shared.csproj" />
   </ItemGroup>
 
 </Project>

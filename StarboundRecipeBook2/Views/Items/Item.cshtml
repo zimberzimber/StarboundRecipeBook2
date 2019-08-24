@@ -1,14 +1,18 @@
 ﻿
-@{ ViewData["Title"] = "ViewItem"; }
-
 @model Item
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 @inject StarboundRecipeBook2.Services.IRecipeRepository RecipeRepo
+
+@{ ViewData["Title"] = Model.ShortDescription.RemoveFormatting(); }
 
 <div class="itemDataContainer">
 	<div>
 		@await Component.InvokeAsync("ItemIcon", Model)
 		@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
+	</div>
+
+	<div>
+		Source mod: @await Component.InvokeAsync("ModSteamLink", Model.SourceModId)
 	</div>
 
 	@if (@Model.InternalName == null)
@@ -84,10 +88,11 @@
 		var recipesFromItem = RecipeRepo.GetRecipesCraftedWithItem(Model.InternalName);
 		if (recipesFromItem.Count > 0)
 		{
+			<div>Can be crafted into...</div>
 			foreach (var recipe in recipesFromItem)
 			{
 				<div>
-					Crafts '@recipe.OutputItemName'
+					@await Component.InvokeAsync("ItemReferenceFromInternalName", recipe.OutputItemName)
 				</div>
 			}
 		}

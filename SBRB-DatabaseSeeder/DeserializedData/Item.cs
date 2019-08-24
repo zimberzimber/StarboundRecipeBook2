@@ -1,41 +1,36 @@
 ﻿using Jil;
-using SBRB_DatabaseSeeder.Workers;
+using SBRB.Models;
+using SBRB.Seeder.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using System.IO;
 
-namespace SBRB_DatabaseSeeder.DeserializedData
+namespace SBRB.Seeder.DeserializedData
 {
-    /// <summary>
-    /// Class storing deserialized item contents. Including active items, consumables, and objects.
-    /// </summary>
+    /// <summary>Class storing deserialized item contents. Including active items, consumables, and objects.</summary>
     class DeserializedItem
     {
         // Nested class for composite icon deserialization.
         class CompositeIconComponent
         {
-            public string image { get; set; }
+            public string image;
         }
 
-        public enum ItemTypes { Generic, Object, Consumable, ActiveItem };
+        public string itemName;
+        public string shortdescription;
+        public string description;
+        public string rarity = "common";
+        public string category;
+        public uint? price;
+        public uint? maxStack;
+        public string tooltipKind;
+        public dynamic inventoryIcon;
+        public string[] learnBlueprintsOnPickup;
+        public bool SBRBhidden = false;
 
-        public string itemName { get; set; }
-        public string shortdescription { get; set; }
-        public string description { get; set; }
-        public string rarity { get; set; }
-        public string category { get; set; }
-        public int price { get; set; }
-        public int maxStack { get; set; } = 1;
-        public string tooltipKind { get; set; }
-        public dynamic inventoryIcon { get; set; }
-        public string[] learnBlueprintsOnPickup { get; set; }
-        public bool SBRBhidden { get; set; }
+        public string filePath;
 
-
-        public ItemTypes itemType { get; set; }
-        public string filePath { get; set; }
-
-        public byte[] GenerateIconImage()
+        public byte[] GenerateIconImage(ArmorTypes? armorType = null)
         {
             // Create the initial image, with 1x1 marking it as uninitialized.
             // Because I highly doubt anyone is going to use a smaller image.
@@ -48,6 +43,8 @@ namespace SBRB_DatabaseSeeder.DeserializedData
             // EDGE CASE: Composite image consist of images with different sizes.
             // RESULT: Not going to account for that, as its also incorrect usage in Starbounds case.
 
+            // EDGE CASE: The image the item is pointing at does not exist in its mod.
+            // RESULT: The image will use the missing asset placeholder
 
             using (Image<Rgba32> fullImage = new Image<Rgba32>(1, 1))
             {
@@ -57,14 +54,14 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                     return null;
 
                 // If the image is composite, run 'AddLayer' on each piece.
-                if (inventoryIcon.ToString().Contains("[{")) // Collection of paths
+                if (inventoryIcon.ToString().Contains("[{")) // Collection of paths (Hacky, but dynamic objects are ass :v)
                 {
                     string[] componentsJSON = inventoryIcon.ToString().Replace("[", "").Replace("]", "").Split(',');
 
                     for (int i = 0; i < componentsJSON.Length; i++)
                     {
                         var component = JSON.Deserialize<CompositeIconComponent>(componentsJSON[i]);
-                        fullImage.AddLayer(component.image, filePath);
+                        fullImage.AddLayer(component.image, filePath, armorType);
                     }
                 }
 
@@ -72,7 +69,7 @@ namespace SBRB_DatabaseSeeder.DeserializedData
                 else
                 {
                     string path = inventoryIcon.ToString().Replace("\"", string.Empty);
-                    fullImage.AddLayer(path, filePath);
+                    fullImage.AddLayer(path, filePath, armorType);
                 }
 
                 // If the dimensions remained 1x1, the image failed to generate, and is empty.
@@ -96,9 +93,9 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
     class DeserializedObject : DeserializedItem
     {
-        public string race { get; set; }
-        public bool printable { get; set; }
-        public string[] colonyTags { get; set; }
+        public string race;
+        public bool? printable;
+        public string[] colonyTags;
 
         // Objects use 'objectName' instead of 'itemName'
         public string objectName { get => itemName; set => itemName = value; }
@@ -106,13 +103,76 @@ namespace SBRB_DatabaseSeeder.DeserializedData
 
     class DeserializedConsumable : DeserializedItem
     {
-        public double foodValue { get; set; }
+        public double? foodValue;
     }
 
     class DeserializedActiveItem : DeserializedItem
     {
-        public double level { get; set; }
-        public bool twoHanded { get; set; }
-        public string elementalType { get; set; }
+        public double? level;
+        public bool? twoHanded;
+        public string elementalType;
+    }
+
+    class DeserializedArmor : DeserializedItem
+    {
+        public double? level;
+        public ArmorTypes armorType;
+    }
+
+    class DeserializedFlashlight : DeserializedItem
+    {
+        public byte[] lightColor;
+        public double beamLevel;
+        public double beamAmbience;
+    }
+
+    class DeserializedTool : DeserializedItem
+    {
+        public ToolTypes ToolType;
+
+        public uint? blockRadius;
+        public bool? twoHanded;
+        public double? fireTime;
+        public double? tileDamage;
+        public double? rangeBonus;
+
+        public double? durability;
+        public double? durabilityPerUse;
+    }
+
+    class DeserializedAugment : DeserializedItem
+    {
+        public DeserializedAugmentData augment;
+    }
+
+    // Starbound has the actual augment data stored in a table within the items definitions
+    // It will be deserialized into this
+    class DeserializedAugmentData
+    {
+        public string type;
+        public string name;
+        public string displayName;
+        public string displayIcon;
+    }
+
+    class DeserializedCurrencyItem : DeserializedItem
+    {
+        public string currency;
+        public int value;
+    }
+
+    class DeserializedMaterialItem : DeserializedItem
+    {
+        public uint materialId;
+    }
+
+    class DeserializedLiquidItem : DeserializedItem
+    {
+        public string liquid;
+    }
+
+    class DeserializedInstrument : DeserializedItem
+    {
+
     }
 }

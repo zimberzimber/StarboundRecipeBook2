@@ -1,11 +1,4 @@
-﻿using Jil;
-using StarboundRecipeBook2.Models;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace SBRB_DatabaseSeeder.DeserializedData
+﻿namespace SBRB.Seeder.DeserializedData
 {
     class DeserializedRecipe
     {

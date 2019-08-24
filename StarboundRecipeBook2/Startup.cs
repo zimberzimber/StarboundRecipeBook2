@@ -16,9 +16,9 @@ namespace WebApplication1
             services.AddDbContext<DatabaseContext>(options =>
             { options.UseSqlServer("Data Source=LEVTOP2;Initial Catalog=SBRB-testing;Integrated Security=True;MultipleActiveResultSets=True;Application Name=EntityFramework"); });
 
+            services.AddTransient<IModRepository, ModRepository>();
             services.AddTransient<IItemRepository, ItemRepository>();
             services.AddTransient<IRecipeRepository, RecipeRepository>();
-            services.AddTransient<ITextColorResolver, TextFormatResolver>();
             services.AddMvc();
         }
 

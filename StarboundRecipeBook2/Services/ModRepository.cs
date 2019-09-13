@@ -1,52 +1,36 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MongoDB.Driver;
 using SBRB.Models;
-using StarboundRecipeBook2.Helpers;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace StarboundRecipeBook2.Services
 {
-    [Flags]
-    public enum ModIncludeOptions : byte
-    {
-        None = 0,
-        Items = 1,
-        Recipes = 2,
-        All = 3
-    }
-
     public interface IModRepository
     {
-        /// <summary>Get a list of all the available mods</summary>
-        /// <param name="includeOptions">Include options for the query</param>
-        List<Mod> GetAllMods(ModIncludeOptions includeOptions = ModIncludeOptions.None);
+        /// <summary>
+        /// Get a list of all the mods
+        /// </summary>
+        /// <param name="skip">How many to skip</param>
+        /// <param name="take">How many to take</param>
+        /// <returns>A list of mods</returns>
+        List<Mod> GetAllMods(int skip = 0, int take = 0);
 
-        /// <summary>Get a specific mod by SteamID, or null if it doesn't exist</summary>
-        /// <param name="steamId">Mods Steam ID</param>
-        /// <param name="includeOptions">Include options for the query</param>
-        Mod GetModById(int steamId, ModIncludeOptions includeOptions = ModIncludeOptions.None);
+        /// <summary>
+        /// Get a mod by its steam ID
+        /// </summary>
+        /// <param name="steamId">The Steam ID to look by</param>
+        /// <returns>A mod with the given Steam ID, or null if its not found</returns>
+        Mod GetModById(uint steamId);
     }
 
-    public class ModRepository : IModRepository
+    public class ModRepository : BaseRepository<Mod>, IModRepository
     {
-        DatabaseContext _context;
+        IQueryable<Mod> BaseQuery { get => _db.Mods.AsQueryable(); }
 
-        public ModRepository(DatabaseContext context)
-        { _context = context; }
+        public List<Mod> GetAllMods(int skip = 0, int take = 0)
+            => SkipTake(BaseQuery, skip, take).ToList();
 
-        IQueryable<Mod> BaseQuery(ModIncludeOptions includeOptions = ModIncludeOptions.None)
-        {
-            return _context.Mods
-                .OrderBy(m => m.SteamId)
-                .If(includeOptions.HasFlag(ModIncludeOptions.Items), q => q.Include(m => m.AddedItems))
-                .If(includeOptions.HasFlag(ModIncludeOptions.Recipes), q => q.Include(m => m.AddedRecipes));
-        }
-
-        public List<Mod> GetAllMods(ModIncludeOptions includeOptions = ModIncludeOptions.None)
-            => BaseQuery(includeOptions).ToList();
-
-        public Mod GetModById(int steamId, ModIncludeOptions includeOptions = ModIncludeOptions.None)
-            => BaseQuery(includeOptions).FirstOrDefault(m => m.SteamId == steamId);
+        public Mod GetModById(uint steamId)
+            => BaseQuery.FirstOrDefault(m => m.SteamId == steamId);
     }
 }

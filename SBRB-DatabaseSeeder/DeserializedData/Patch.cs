@@ -1,7 +1,8 @@
-﻿namespace SBRB_DatabaseSeeder.DeserializedData
+﻿namespace SBRB.Seeder.DeserializedData
 {
     public class DeserializedPatchFile
     {
+        public string filePath;
         public DeserializedPatchContents[] contents { get; set; }
     }
 

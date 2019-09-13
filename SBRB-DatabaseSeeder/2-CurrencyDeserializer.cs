@@ -2,10 +2,8 @@
 using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
 using SBRB.Seeder.Extensions;
-using SBRB_DatabaseSeeder.DeserializedData;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -63,7 +61,7 @@ namespace SBRB.Seeder
             }
 
             // Encapsulate the patch contents in an object because a patches root is an array instead of an object
-            string patchJson = string.Format("{0}{1}{2}", "{\"contents\":", File.ReadAllText($"{modPath}\\{CURRENCY_FILE}.patch").RemoveComments(), "}");
+            string patchJson = File.ReadAllText($"{modPath}\\{CURRENCY_FILE}.patch").RemoveComments().LegitizimeJsonPatch();
             DeserializedPatchFile patchFile = JSON.Deserialize<DeserializedPatchFile>(patchJson);
 
             foreach (var item in patchFile.contents)

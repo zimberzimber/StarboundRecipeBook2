@@ -1,5 +1,4 @@
 ﻿using SBRB.Seeder.Extensions;
-using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,9 +21,14 @@ namespace SBRB.Seeder
         // String telling the program which extension is to be considered as a recipe
         const string RECIPE_FILE_EXTENSION = ".recipe";
 
+        // String telling the program which extension is to be considered as a patch
+        //const string PATCH_FILE_EXTENSION = ".patch";
+        const string PATCH_FILE_EXTENSION = "?"; // <- Files can't have a question mark in their name :^)
+
         // Queues containing discovered items and recipes
         static ConcurrentQueue<string> _itemFiles = new ConcurrentQueue<string>();
         static ConcurrentQueue<string> _recipeFiles = new ConcurrentQueue<string>();
+        static ConcurrentQueue<string> _patchFiles = new ConcurrentQueue<string>();
 
         /// <summary>
         /// Recursive function iterating through files and folders within the given directory.
@@ -59,6 +63,8 @@ namespace SBRB.Seeder
 
             // Wait for the tasks to complete
             Task.WaitAll(tasks.ToArray());
+
+            var z = 5;
         }
 
         /// <summary>
@@ -71,11 +77,24 @@ namespace SBRB.Seeder
             string extension = Path.GetExtension(file);
 
             // Check whether the files extension falls under a recipe or item category, and add them into the appropriate queue.
+            // If the extension matches to that of a patch file, check if its subextension also matches the above criteria.
             // Do nothing if its an unaccaptable extension.
             if (extension.Equals(RECIPE_FILE_EXTENSION))
             {
                 _recipeFiles.Enqueue(file);
                 _logger.Log("Found recipe file:\t{0}", file.TrimPath(modPath));
+            }
+            else if (extension.Equals(PATCH_FILE_EXTENSION))
+            {
+                // Get the sub extansion
+                string fileName = Path.GetFileNameWithoutExtension(file);
+                string subExtension = Path.GetExtension(fileName);
+
+                if (subExtension.Equals(RECIPE_FILE_EXTENSION) || ACCEPTABLE_ITEM_EXTENSIONS.Contains(subExtension))
+                {
+                    _patchFiles.Enqueue(file);
+                    _logger.Log("Found patch file:\t{0}", file.TrimPath(modPath));
+                }
             }
             else if (ACCEPTABLE_ITEM_EXTENSIONS.Contains(extension))
             {

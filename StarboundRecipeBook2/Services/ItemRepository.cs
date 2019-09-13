@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MongoDB.Driver;
 using SBRB.Models;
 using StarboundRecipeBook2.Helpers;
 using System;
@@ -7,130 +7,136 @@ using System.Linq;
 
 namespace StarboundRecipeBook2.Services
 {
-    [Flags]
-    public enum ItemIncludeOptions : byte
+    /// <summary>
+    /// Enum containing what the items can be search by when searching by string.
+    /// </summary>
+    public enum ItemSearchBy : byte
     {
-        None = 0,
-        Mods = 1,
-        Unlocks = 2,
-        All = 3
-    };
+        InternalName,
+        ShortDescription
+    }
 
+    /// <summary>
+    /// Flag enum containing item types which can be searched for.
+    /// </summary>
     [Flags]
-    public enum ItemSearchOptions : byte
+    public enum ItemSearchType : ushort
     {
         None = 0,
         Generic = 1,
-        Object = 2,
+        ActiveItem = 2,
         Consumable = 4,
-        ActiveItem = 8,
-        All = 15
+        Object = 8,
+        Armor = 16,
+        Augment = 32,
+        CurrencyItem = 64,
+        Tool = 128,
+        Flashlight = 256,
+        Material = 512,
+        Liquid = 1024,
+        Instrument = 2048,
+        All = 4096
     }
 
     public interface IItemRepository
     {
-        /// <summary>Get an item based on ID and source mod ID.</summary>
-        /// <param name="itemId">Items ID</param>
-        /// <param name="sourceModId">Source mods ID</param>
-        /// <param name="options">Include options for the query</param>
-        /// <returns></returns>
-        Item GetItemByIds(int itemId, int sourceModId, ItemIncludeOptions options = ItemIncludeOptions.None);
+        /// <summary>
+        /// Look for an item by ID
+        /// </summary>
+        /// <param name="itemId">The items id within the database</param>
+        /// <param name="sourceModId">The items source mod ID</param>
+        /// <returns>An item matching the IDs, or null if it wasn't found</returns>
+        Item GetItemById(uint itemId, uint sourceModId);
 
-        /// <summary>Get a queriable of items matching the short description (visible name)</summary>
-        /// <param name="shortDescription">Short description to search by</param>
-        /// <param name="partialMatch">Whether the names must fully match (excluding case)</param>
-        /// <param name="options">Include options for the query</param>
-        /// <returns></returns>
-        List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All);
+        /// <summary>
+        /// Look for an item by ID
+        /// </summary>
+        /// <param name="compositeItemId">A composite item ID, containing both the database ID and the source mod ID</param>
+        /// <returns>An item matching the composite ID, or null if it wasn't found</returns>
+        Item GetItemById(CompositeItemId compositeItemId);
 
-        /// <summary>Get a queriable of items matching the internal name</summary>
-        /// <param name="internalName">Internal name to search by</param>
-        /// <param name="partialMatch">Whether the names must fully match (excluding case)</param>
-        /// <param name="options">Include options for the query</param>
-        /// <returns></returns>
-        List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All);
+        /// <summary>
+        /// Get all items without applying any filters
+        /// </summary>
+        /// <param name="skip">How many should be skipped</param>
+        /// <param name="take">How many should be taken</param>
+        /// <returns>A list containing the items</returns>
+        List<Item> GetAllItems(int skip = 0, int take = int.MaxValue);
 
-        /// <summary>Get a queriable list of all the items.</summary>
-        /// <param name="skip">Number of items to skip over</param>
-        /// <param name="count">Number of items to take</param>
-        /// <param name="options">Include options for the query</param>
-        /// <returns></returns>
-        List<Item> GetAllItems(int skip = 0, int count = int.MaxValue, ItemIncludeOptions options = ItemIncludeOptions.None);
+        /// <summary>
+        /// Get items fitting the parameters
+        /// </summary>
+        /// <param name="searching">The string to search by</param>
+        /// <param name="partialMatch">Whether the search should look in the middle of an items name</param>
+        /// <param name="skip">How many should be skipped</param>
+        /// <param name="take">How many should be taken</param>
+        /// <param name="searchBy">Search by internal name or short description</param>
+        /// <param name="searchType">Item types to search for</param>
+        /// <returns>A list containing the items matching the searching criteria</returns>
+        List<Item> GetItems(string searching, bool partialMatch = false, int skip = 0, int take = int.MaxValue, ItemSearchBy searchBy = ItemSearchBy.InternalName, ItemSearchType searchType = ItemSearchType.All);
     }
 
-    public class ItemRepository : IItemRepository
+    public class ItemRepository : BaseRepository<Item>, IItemRepository
     {
-        DatabaseContext _context;
+        IQueryable<Item> BaseQuery { get => _db.Items.AsQueryable(); }
 
-        public ItemRepository(DatabaseContext context)
-        { _context = context; }
+        public Item GetItemById(uint itemId, uint sourceModId)
+            => BaseQuery.FirstOrDefault(i => i.ID.ItemId == itemId && i.ID.SourceModId == sourceModId);
 
-        // Helper method to create an initial query thats used by most other methods
-        IQueryable<Item> InitialQuery(int skip = 0, int count = int.MaxValue, ItemIncludeOptions includeOptions = ItemIncludeOptions.None)
+        public Item GetItemById(CompositeItemId compositeItemId)
+            => GetItemById(compositeItemId.ItemId, compositeItemId.SourceModId);
+
+        IQueryable<Item> SearchByType(IQueryable<Item> baseQueriable, ItemSearchType searchOptions)
         {
-            return _context.Items
-                .Include(i => i.ObjectData)
-                .Include(i => i.ConsumableData)
-                .Include(i => i.ActiveItemData)
-                .If(includeOptions.HasFlag(ItemIncludeOptions.Mods), q => q.Include(i => i.SourceMod))
-                .If(includeOptions.HasFlag(ItemIncludeOptions.Unlocks), q => q.Include(i => i.Unlocks))
-                .Skip(skip)
-                .Take(count);
-        }
+            if (searchOptions == ItemSearchType.None)
+                return baseQueriable.Take(0);
 
-        // Helper method that queries searches by type
-        IQueryable<Item> SearchByType(IQueryable<Item> baseQueriable, ItemSearchOptions searchOptions = ItemSearchOptions.All)
-        {
-            var baseQ = baseQueriable; // Keep a copy of the original query, for pulling out relevant data and adding it into the returned query
-
-            if (searchOptions == ItemSearchOptions.All)
+            if (searchOptions.HasFlag(ItemSearchType.All))
                 return baseQueriable;
 
-            //var zzz = baseQ.Where(x => x.Type == Item.ItemTypes.consumableItem);
+            var resultQ = baseQueriable.Take(0);
 
-            return baseQ.Take(0)
-                .If(searchOptions.HasFlag(ItemSearchOptions.Generic),
-                    q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.genericItem)))
+            foreach (ItemSearchType option in Enum.GetValues(typeof(ItemSearchType)))
+                if (searchOptions.HasFlag(option))
+                    resultQ.Union(baseQueriable.Where(i => i.ItemType.ToString().Equals(option.ToString())));
 
-                .If(searchOptions.HasFlag(ItemSearchOptions.Object),
-                    q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.objectItem)))
-
-                .If(searchOptions.HasFlag(ItemSearchOptions.ActiveItem),
-                    q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.activeItem)))
-
-                .If(searchOptions.HasFlag(ItemSearchOptions.Consumable),
-                    q => q.Union(baseQ.Where(i => i.Type == Item.ItemTypes.consumableItem)));
+            return resultQ;
         }
 
-        public Item GetItemByIds(int itemId, int sourceModId, ItemIncludeOptions options = ItemIncludeOptions.None)
+        IQueryable<Item> SearchByName(IQueryable<Item> baseQueriable, string searching, bool partialMatch, ItemSearchBy order)
         {
-            return InitialQuery(includeOptions: options)
-                .FirstOrDefault(i => i.ItemId == itemId && i.SourceModId == sourceModId);
+            IQueryable<Item> resultQ;
+
+            switch (order)
+            {
+                case ItemSearchBy.ShortDescription:
+                    resultQ = baseQueriable
+                                .If(partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().StartsWith(searching, StringComparison.OrdinalIgnoreCase)))
+                                .If(!partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().Equals(searching, StringComparison.OrdinalIgnoreCase)))
+                                .OrderBy(i => i.ShortDescription.RemoveFormatting());
+                    break;
+                case ItemSearchBy.InternalName:
+                    resultQ = baseQueriable
+                                .If(partialMatch, q => q.Where(i => i.InternalName.StartsWith(searching, StringComparison.OrdinalIgnoreCase)))
+                                .If(!partialMatch, q => q.Where(i => i.InternalName.Equals(searching, StringComparison.OrdinalIgnoreCase)))
+                                .OrderBy(i => i.InternalName);
+                    break;
+                default:
+                    throw new ArgumentException("Received an unhandled value for the 'order' arguement under the 'SearchByName' method.");
+            }
+
+            return resultQ;
         }
 
-        public List<Item> GetAllItems(int skip = 0, int count = int.MaxValue, ItemIncludeOptions options = ItemIncludeOptions.None)
+        public List<Item> GetAllItems(int skip = 0, int take = int.MaxValue)
+            => SkipTake(BaseQuery, skip, take).ToList();
+
+        public List<Item> GetItems(string searching, bool partialMatch = false, int skip = 0, int take = int.MaxValue, ItemSearchBy searchBy = ItemSearchBy.InternalName, ItemSearchType searchType = ItemSearchType.All)
         {
-            return InitialQuery(skip, count, options).OrderBy(i => i.ShortDescription.RemoveFormatting()).ToList();
-        }
-
-        public List<Item> GetItemsByShortDescription(string shortDescription, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All)
-        {
-            var queriable = InitialQuery(includeOptions: options)
-                    .If(partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().ToLower().StartsWith(shortDescription.ToLower())))
-                    .If(!partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().ToLower().Equals(shortDescription.ToLower())))
-                    .OrderBy(i => i.ShortDescription.RemoveFormatting());
-
-            return SearchByType(queriable, searchOptions).ToList();
-        }
-
-        public List<Item> GetItemsByInternalName(string internalName, bool partialMatch = false, ItemIncludeOptions options = ItemIncludeOptions.None, ItemSearchOptions searchOptions = ItemSearchOptions.All)
-        {
-            var queriable = InitialQuery(includeOptions: options)
-                    .If(partialMatch, q => q.Where(i => i.InternalName.ToLower().StartsWith(internalName.ToLower())))
-                    .If(!partialMatch, q => q.Where(i => i.InternalName.ToLower().Equals(internalName.ToLower())))
-                    .OrderBy(i => i.InternalName);
-
-            return SearchByType(queriable, searchOptions).ToList();
+            var baseQ = SkipTake(BaseQuery, skip, take);
+            baseQ = SearchByType(baseQ, searchType);
+            baseQ = SearchByName(baseQ, searching, partialMatch, searchBy);
+            return baseQ.ToList();
         }
     }
 }

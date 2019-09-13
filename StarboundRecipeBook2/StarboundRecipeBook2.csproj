@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ModelsLibrary\ModelsLibrary.csproj" />
+    <ProjectReference Include="..\ModelsLibrary\SBRB-Shared.csproj" />
   </ItemGroup>
 
 </Project>

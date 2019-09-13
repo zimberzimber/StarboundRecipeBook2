@@ -14,7 +14,7 @@ namespace StarboundRecipeBook2.Controllers
 
         public IActionResult Index()
         {
-            ItemSearchOptions searchOptions = ItemSearchOptions.None;
+            ItemSearchType searchOptions = ItemSearchType.None;
 
             bool? generic = Request.Cookies["filterGeneric"].ToBool();
             bool? objects = Request.Cookies["filterObjects"].ToBool();
@@ -27,19 +27,19 @@ namespace StarboundRecipeBook2.Controllers
 
             // Add flags based on check boxes
             if (generic == true)
-                searchOptions |= ItemSearchOptions.Generic;
+                searchOptions |= ItemSearchType.Generic;
 
             if (objects == true)
-                searchOptions |= ItemSearchOptions.Object;
+                searchOptions |= ItemSearchType.Object;
 
             if (activeItems == true)
-                searchOptions |= ItemSearchOptions.ActiveItem;
+                searchOptions |= ItemSearchType.ActiveItem;
 
             if (consumables == true)
-                searchOptions |= ItemSearchOptions.Consumable;
+                searchOptions |= ItemSearchType.Consumable;
 
             // No ItemSearchOptions selected
-            if (searchOptions == ItemSearchOptions.None)
+            if (searchOptions == ItemSearchType.None)
                 return View();
 
             // Empty text box

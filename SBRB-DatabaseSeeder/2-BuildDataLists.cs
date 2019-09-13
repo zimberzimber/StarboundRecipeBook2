@@ -15,6 +15,7 @@ namespace SBRB.Seeder
         // Queues containing the deserialized items and recipes
         static ConcurrentQueue<DeserializedItem> _deserializedItems = new ConcurrentQueue<DeserializedItem>();
         static ConcurrentQueue<DeserializedRecipe> _deserializedRecipes = new ConcurrentQueue<DeserializedRecipe>();
+        static ConcurrentQueue<DeserializedPatchFile> _deserializedPatches = new ConcurrentQueue<DeserializedPatchFile>();
 
         /// <summary>
         /// Initialize the file deserialization proccess, converting them into appropriate classes.
@@ -36,6 +37,14 @@ namespace SBRB.Seeder
             foreach (var recipeFile in _recipeFiles)
             {
                 var task = new Task(() => ProcessRecipe(recipeFile));
+                tasks.Add(task);
+                task.Start();
+            }
+
+            // Create, index, and start patch deserialization tasks
+            foreach (var patchFile in _patchFiles)
+            {
+                var task = new Task(() => ProcessPatch(patchFile));
                 tasks.Add(task);
                 task.Start();
             }
@@ -171,6 +180,23 @@ namespace SBRB.Seeder
 
             // Enqueue the recipe for later conversion into a database appropriate format
             _deserializedRecipes.Enqueue(recipe);
+        }
+
+        /// <summary>
+        /// Deserialize a patch file into the appropriate class.
+        /// </summary>
+        /// <param name="file">Path to file</param>
+        static void ProcessPatch(string file)
+        {
+            _logger.Log("Deserializing patch: {0}", file.TrimPath(modPath));
+
+            // Deserialize the patch file
+            string json = File.ReadAllText(file).RemoveComments().LegitizimeJsonPatch();
+            DeserializedPatchFile patch = JSON.Deserialize<DeserializedPatchFile>(json);
+            patch.filePath = file;
+
+            // Enqueue the recipe for later conversion into a database appropriate format
+            _deserializedPatches.Enqueue(patch);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
 using SBRB.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,24 +8,21 @@ namespace StarboundRecipeBook2.Services
 {
     public interface IRecipeRepository
     {
-        /// <summary>Get a list of recipes that create the given item.</summary>
-        /// <param name="internalItemName">Internal item name</param>
-        List<Recipe> GetRecipesForItem(string internalItemName);
-
-        /// <summary>Get a list of recipes that use the given item.</summary>
-        /// <param name="internalItemName">Internal item name</param>
-        List<Recipe> GetRecipesCraftedWithItem(string internalItemName);
     }
 
-    public class RecipeRepository : IRecipeRepository
+    public class RecipeRepository : BaseRepository<Recipe>, IRecipeRepository
     {
-        DatabaseContext _context;
+        IItemRepository _itemRepo;
 
-        public RecipeRepository(DatabaseContext context)
-        { _context = context; }
+        public RecipeRepository(IItemRepository itemRepo) : base()
+            => _itemRepo = itemRepo;
+
+        IQueryable<Recipe> BaseQuery { get => _db.Recipes.AsQueryable(); }
 
         public List<Recipe> GetRecipesForItem(string internalItemName)
-            => _context.Recipes.Where(recipe => recipe.OutputItemName == internalItemName).Include(r => r.RecipeInputs).ToList();
+        {
+            List<Item>
+        }
 
         public List<Recipe> GetRecipesCraftedWithItem(string internalItemName)
         {

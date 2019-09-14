@@ -1,10 +1,10 @@
 ﻿@model Item
 
 @{
-	<a class="ItemReferenceDisplayLink" asp-controller="Items" asp-action="Item" asp-route-itemId="@Model.ItemId" asp-route-modId="@Model.SourceModId">
+	<a class="ItemReferenceDisplayLink" asp-controller="Items" asp-action="Item" asp-route-itemId="@Model.ID.ItemId" asp-route-modId="@Model.ID.SourceModId">
 		<div class="ItemReferenceDisplay InlineBlockDiv">
 			@await Component.InvokeAsync("ItemIcon", Model)
-			@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
+			@Model.ShortDescription
 		</div>
 	</a>
 }

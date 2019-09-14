@@ -3,103 +3,103 @@
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 @inject StarboundRecipeBook2.Services.IRecipeRepository RecipeRepo
 
-@{ ViewData["Title"] = Model.ShortDescription.RemoveFormatting(); }
+@{ ViewData["Title"] = Model.ShortDescription; }
 
 <div class="itemDataContainer">
-	<div>
-		@await Component.InvokeAsync("ItemIcon", Model)
-		@await Component.InvokeAsync("ColoredText", Model.ShortDescription)
-	</div>
+    <div>
+        @await Component.InvokeAsync("ItemIcon", Model)
+        @Model.ShortDescription
+    </div>
 
-	<div>
-		Source mod: @await Component.InvokeAsync("ModSteamLink", Model.SourceModId)
-	</div>
+    <div>
+        Source mod: @await Component.InvokeAsync("ModSteamLink", Model.ID.SourceModId)
+    </div>
 
-	@if (@Model.InternalName == null)
-	{
-		<div>
-			Internal name and path are hidden.
-		</div>
-	}
-	else
-	{
-		<div>
-			Internal name: @Model.InternalName
-		</div>
-		<div>
-			Definition at: @Model.FilePath
-		</div>
-	}
+    @if (@Model.InternalName == null)
+    {
+        <div>
+            Internal name and path are hidden.
+        </div>
+    }
+    else
+    {
+        <div>
+            Internal name: @Model.InternalName
+        </div>
+        <div>
+            Definition at: @Model.FilePath
+        </div>
+    }
 
-	<br />
-	<div>
-		@await Component.InvokeAsync("ColoredText", Model.Description)
-	</div>
+    <br />
+    <div>
+        @await Component.InvokeAsync("ColoredText", Model.Description)
+    </div>
 
-	<br />
-	@if (Model.Unlocks != null && Model.Unlocks.Count > 0)
-	{
-		<div>
-			Unlocks recipes for
-			@foreach (var unlock in Model.Unlocks)
-			{
-				<div>
-					@await Component.InvokeAsync("ItemReferenceFromInternalName", unlock.UnlockedItemName)
-				</div>
-			}
-		</div>
-	}
-	else
-	{
-		<div>
-			No recipes unlocked by this item.
-		</div>
-	}
-	<br />
+    <br />
+    @if (Model.blueprintsOnPickup != null && Model.blueprintsOnPickup.Length > 0)
+    {
+        <div>
+            Unlocks recipes for
+            @foreach (var unlock in Model.blueprintsOnPickup)
+            {
+                <div>
+                    @await Component.InvokeAsync("ItemReferenceFromInternalName", unlock)
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div>
+            No recipes unlocked by this item.
+        </div>
+    }
+    <br />
 
-	@if (Model.InternalName == null)
-	{
-		<div>Item is hidden.</div>
-	}
-	else
-	{
-		var recipesForItem = RecipeRepo.GetRecipesForItem(Model.InternalName);
-		if (recipesForItem.Count > 0)
-		{
-			foreach (var recipe in recipesForItem)
-			{
-				<br />
-				<div>Recipe at @recipe.FilePath</div>
-				<div>
-					@foreach (var input in recipe.RecipeInputs)
-					{
-						<div>@await Component.InvokeAsync("ItemReferenceFromInternalName", input.InputItemName) x @input.InputCount</div>
-					}
-				</div>
-			}
-		}
-		else
-		{
-			<div>No recipes for crafting this item.</div>
-		}
+    @if (Model.InternalName == null)
+    {
+        <div>Item is hidden.</div>
+    }
+    else
+    {
+        var recipesForItem = RecipeRepo.GetRecipesForItem(Model.InternalName);
+        if (recipesForItem.Count > 0)
+        {
+            foreach (var recipe in recipesForItem)
+            {
+                <br />
+                <div>Recipe at @recipe.FilePath</div>
+                <div>
+                    @foreach (var input in recipe.Inputs)
+                    {
+                        <div>@await Component.InvokeAsync("ItemReferenceFromInternalName", input.ItemName) x @input.Count </div>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <div>No recipes for crafting this item.</div>
+        }
 
-		<br />
+        <br />
 
-		var recipesFromItem = RecipeRepo.GetRecipesCraftedWithItem(Model.InternalName);
-		if (recipesFromItem.Count > 0)
-		{
-			<div>Can be crafted into...</div>
-			foreach (var recipe in recipesFromItem)
-			{
-				<div>
-					@await Component.InvokeAsync("ItemReferenceFromInternalName", recipe.OutputItemName)
-				</div>
-			}
-		}
-		else
-		{
-			<div>No recipes are crafted with this item.</div>
-		}
-	}
+        var recipesFromItem = RecipeRepo.GetRecipesCraftedWithItem(Model.InternalName);
+        if (recipesFromItem.Count > 0)
+        {
+            <div>Can be crafted into...</div>
+            foreach (var recipe in recipesFromItem)
+            {
+                <div>
+                    @await Component.InvokeAsync("ItemReferenceFromInternalName", recipe.OutputItemName)
+                </div>
+            }
+        }
+        else
+        {
+            <div>No recipes are crafted with this item.</div>
+        }
+    }
 </div>
 

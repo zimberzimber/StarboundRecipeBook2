@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using SBRB.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace StarboundRecipeBook2.Services
         /// <param name="skip">How many to skip</param>
         /// <param name="take">How many to take</param>
         /// <returns>A list of mods</returns>
-        List<Mod> GetAllMods(int skip = 0, int take = 0);
+        List<Mod> GetAllMods(int skip = 0, int take = int.MaxValue);
 
         /// <summary>
         /// Get a mod by its steam ID
@@ -27,7 +28,7 @@ namespace StarboundRecipeBook2.Services
     {
         public override IQueryable<Mod> BaseQuery => _db.Mods.AsQueryable();
 
-        public List<Mod> GetAllMods(int skip = 0, int take = 0)
+        public List<Mod> GetAllMods(int skip, int take)
             => SkipTake(BaseQuery, skip, take).ToList();
 
         public Mod GetModById(uint steamId)

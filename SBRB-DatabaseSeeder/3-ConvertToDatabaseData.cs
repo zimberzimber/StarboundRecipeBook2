@@ -1,6 +1,7 @@
 ﻿using SBRB.Models;
 using SBRB.Seeder.DeserializedData;
 using SBRB.Seeder.Extensions;
+using SBRB_DatabaseSeeder.Extensions;
 using SBRB_DatabaseSeeder.Workers;
 using System;
 using System.Collections.Concurrent;
@@ -75,7 +76,7 @@ namespace SBRB.Seeder
 
             // Set the data
             item.Description = dItem.description;
-            item.ShortDescription = dItem.shortdescription;
+            item.ShortDescription = dItem.shortdescription?.RemoveFormatting();
             item.Category = dItem.category;
             item.Rarity = (Rarities)Enum.Parse(typeof(Rarities), dItem.rarity.ToLower());
             item.MaxStack = dItem.maxStack;

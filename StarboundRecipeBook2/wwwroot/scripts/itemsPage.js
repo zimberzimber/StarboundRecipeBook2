@@ -1,59 +1,86 @@
 ﻿
-// This one is needed outside of the init scope
-// Can hide in in an IIFE, no point though
-
 const searchByCookieName = "searchBy"
+const partialNameMatchCookieName = "partialNameMatch"
+
+const filterKeyword = "filter-"
+const filterTypeOptions = {
+    "Generic" : "Generic",
+    "ActiveItem" : "Active Items",
+    "Consumable" : "Consumeables",
+    "Object" : "Objects",
+    "Armor" : "Armors",
+    "Augment" : "Augments",
+    "CurrencyItem" : "Currencies",
+    "Tool" : "Tools",
+    "Flashlight" : "Flashlights",
+    "Material" : "Materials",
+    "Liquid" : "Liquids",
+    "Instrument" : "Instruments"
+}
 
 window.addEventListener('DOMContentLoaded', () => {
-	const searchByButtonIDs = ["searchByDisplayedName", "searchByInternalName"]
-	const filterCheckboxIDs = ["filterGeneric", "filterObjects", "filterActiveItems", "filterConsumables", "partialNameMatch"]
+    const searchByButtonIDs = ["searchByDisplayedName", "searchByInternalName"]
+    const checkboxContainer = document.getElementById("filterCheckboxContainer")
 
-	for (let i = 0; i < filterCheckboxIDs.length; i++) {
-		let cookieValue = getCookie(filterCheckboxIDs[i])
-		let element = document.getElementById(filterCheckboxIDs[i])
+    Object.keys(filterTypeOptions).forEach(function (key) {
+        let checkbox = document.createElement("input")
+        checkboxContainer.appendChild(checkbox)
 
-		if (cookieValue === "") {
-			// Set selection to 'true' by default if no cookie was selected, and create the cookie
-			element.checked = true
-			document.cookie = filterCheckboxIDs[i] + "=true"
-		}
-		else {
-			element.checked = cookieValue === "true"
-		}
-	}
+        checkbox.setAttribute("type", "checkbox")
+        checkbox.setAttribute("id", filterKeyword + key)
+        checkbox.onclick = function () { filterCheckboxTick(checkbox) }
 
-	var searchBy = getCookie(searchByCookieName)
-	if (searchBy === "") {
-		document.cookie = searchByButtonIDs[0]
-		searchBy = searchByButtonIDs[0]
-	}
+        checkboxContainer.appendChild(document.createTextNode(filterTypeOptions[key]));
+        checkboxContainer.appendChild(document.createElement("br"))
 
-	let element = document.getElementById(searchBy)
-	element.checked = true
+        let cookieValue = getCookie(filterKeyword + key)
+
+        // Set selection to 'true' by default if no cookie was selected, and create the cookie
+        if (cookieValue === "") {
+            checkbox.checked = true
+            document.cookie = filterKeyword + key + "=true"
+        }
+        else {
+            checkbox.checked = cookieValue === "true"
+        }
+    })
+
+    var searchBy = getCookie(searchByCookieName)
+    if (searchBy === "") {
+        document.cookie = searchByButtonIDs[0]
+        searchBy = searchByButtonIDs[0]
+    }
+
+    let searchByElement = document.getElementById(searchBy)
+    searchByElement.checked = true
+
+    let partialNameMatch = getCookie(partialNameMatchCookieName)
+    let partialNameMatchElement = document.getElementById("partialNameMatch")
+    partialNameMatchElement.checked = partialNameMatch === "true"
 });
 
 function getCookie(cname) {
-	var name = cname + "=";
-	var decodedCookie = decodeURIComponent(document.cookie);
-	var ca = decodedCookie.split(';');
-	for (var i = 0; i < ca.length; i++) {
-		var c = ca[i];
-		while (c.charAt(0) == ' ') {
-			c = c.substring(1);
-		}
-		if (c.indexOf(name) == 0) {
-			return c.substring(name.length, c.length);
-		}
-	}
-	return "";
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
 }
 
 function filterCheckboxTick(checkbox) {
-	let filter = checkbox.getAttribute('id')
-	document.cookie = filter + "=" + checkbox.checked
+    let filter = checkbox.getAttribute('id')
+    document.cookie = filter + "=" + checkbox.checked
 }
 
 function searchByButtonClick(radioButton) {
-	let filter = radioButton.getAttribute('id')
-	document.cookie = searchByCookieName + "=" + filter
+    let filter = radioButton.getAttribute('id')
+    document.cookie = searchByCookieName + "=" + filter
 }

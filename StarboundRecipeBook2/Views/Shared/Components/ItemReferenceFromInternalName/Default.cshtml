@@ -2,7 +2,7 @@
 @inject StarboundRecipeBook2.Services.IItemRepository ItemRepo
 
 @{
-	var itemList = ItemRepo.GetItemsByInternalName(Model);
+	var itemList = ItemRepo.GetItems(Model);
 
 	if (itemList.Count > 0)
 	{

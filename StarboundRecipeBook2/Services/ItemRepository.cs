@@ -1,9 +1,13 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using SBRB.Models;
-using StarboundRecipeBook2.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+
+// MongoDB queriables don't support some string methods (.Equals / .StartsWith), or custom extensions (.RemoveFormatting)
 
 namespace StarboundRecipeBook2.Services
 {
@@ -88,54 +92,87 @@ namespace StarboundRecipeBook2.Services
 
         IQueryable<Item> SearchByType(IQueryable<Item> baseQueriable, ItemSearchType searchOptions)
         {
-            if (searchOptions == ItemSearchType.None)
-                return baseQueriable.Take(0);
-
             if (searchOptions.HasFlag(ItemSearchType.All))
                 return baseQueriable;
 
             var resultQ = baseQueriable.Take(0);
 
-            foreach (ItemSearchType option in Enum.GetValues(typeof(ItemSearchType)))
-                if (searchOptions.HasFlag(option))
-                    resultQ.Union(baseQueriable.Where(i => i.ItemType.ToString().Equals(option.ToString())));
+            if (searchOptions != ItemSearchType.None)
+                foreach (ItemSearchType option in Enum.GetValues(typeof(ItemSearchType)))
+                    if (searchOptions.HasFlag(option))
+                        resultQ.Union(baseQueriable.Where(i => i.ItemType.ToString().Equals(option.ToString())));
 
             return resultQ;
         }
 
-        IQueryable<Item> SearchByName(IQueryable<Item> baseQueriable, string searching, bool partialMatch, ItemSearchBy order)
+        // Mongo C# driver cannot work with string operations inside the query (i.e  i => i.ShortDescription.ToLower().Equals(searchingBy))
+        // So I have to resort to using a filter
+        FilterDefinition<Item> GetSearchByNameFilter(string searching, bool partialMatch, ItemSearchBy searchBy)
         {
-            IQueryable<Item> resultQ;
+            FilterDefinition<Item> resultFilter;
+            BsonRegularExpression regex;
 
-            switch (order)
+            if (partialMatch)
+                regex = new BsonRegularExpression($"^{searching}", "i");
+            else
+                regex = new BsonRegularExpression($"^{searching}$", "i");
+
+            if (searchBy == ItemSearchBy.InternalName)
+                resultFilter = Builders<Item>.Filter.Regex(i => i.InternalName, regex);
+            else
+                resultFilter = Builders<Item>.Filter.Regex(i => i.ShortDescription, regex);
+
+            return resultFilter;
+
+            // Old code:
+            /*
+            IMongoQueryable<Item> resultQ;
+            switch (searchBy)
             {
                 case ItemSearchBy.ShortDescription:
-                    resultQ = baseQueriable
-                                .If(partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().StartsWith(searching, StringComparison.OrdinalIgnoreCase)))
-                                .If(!partialMatch, q => q.Where(i => i.ShortDescription.RemoveFormatting().Equals(searching, StringComparison.OrdinalIgnoreCase)))
-                                .OrderBy(i => i.ShortDescription.RemoveFormatting());
+                    if (partialMatch)
+                        resultQ = baseQueriable.Where(i => i.ShortDescription.StartsWith(searching, StringComparison.OrdinalIgnoreCase));
+                    else
+                        resultQ = baseQueriable.Where(i => i.ShortDescription.Equals(searching, StringComparison.OrdinalIgnoreCase));
+
+                    resultQ.OrderBy(i => i.ShortDescription);
                     break;
+
                 case ItemSearchBy.InternalName:
-                    resultQ = baseQueriable
-                                .If(partialMatch, q => q.Where(i => i.InternalName.StartsWith(searching, StringComparison.OrdinalIgnoreCase)))
-                                .If(!partialMatch, q => q.Where(i => i.InternalName.Equals(searching, StringComparison.OrdinalIgnoreCase)))
-                                .OrderBy(i => i.InternalName);
+                    if (partialMatch)
+                        resultQ = baseQueriable.Where(i => i.InternalName.StartsWith(searching, StringComparison.OrdinalIgnoreCase));
+                    else
+                        resultQ = baseQueriable.Where(i => i.InternalName.ToLower() == searching.ToLower());
+
+                    resultQ.OrderBy(i => i.InternalName);
                     break;
+
                 default:
                     throw new ArgumentException("Received an unhandled value for the 'order' arguement under the 'SearchByName' method.");
             }
 
             return resultQ;
+            */
         }
 
-        public List<Item> GetAllItems(int skip = 0, int take = int.MaxValue)
+        public List<Item> GetAllItems(int skip, int take)
             => SkipTake(BaseQuery, skip, take).ToList();
 
-        public List<Item> GetItems(string searching, bool partialMatch = false, int skip = 0, int take = int.MaxValue, ItemSearchBy searchBy = ItemSearchBy.InternalName, ItemSearchType searchType = ItemSearchType.All)
+        public List<Item> GetItems(string searching, bool partialMatch, int skip, int take, ItemSearchBy searchBy, ItemSearchType searchType)
         {
-            var baseQ = SkipTake(BaseQuery, skip, take);
+            IQueryable<Item> baseQ;
+
+            var filter = GetSearchByNameFilter(searching, partialMatch, searchBy);
+            var found = _db.Items.Find(filter);
+
+            if (searchBy == ItemSearchBy.ShortDescription)
+                baseQ = found.SortBy(i => i.ShortDescription).ToList().AsQueryable();
+            else
+                baseQ = found.SortBy(i => i.InternalName).ToList().AsQueryable();
+
             baseQ = SearchByType(baseQ, searchType);
-            baseQ = SearchByName(baseQ, searching, partialMatch, searchBy);
+            baseQ = SkipTake(baseQ, skip, take);
+
             return baseQ.ToList();
         }
     }

@@ -5,53 +5,45 @@
 <script src="~/scripts/itemsPage.js"></script>
 
 <form id="searchForm">
-	<div>
-		Search by name: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
-	</div>
+    <div>
+        Search by name: <input type="text" name="itemSearch" value="@ViewBag.itemSearch" />
+    </div>
 </form>
 
 <table class="searchOptionsTable">
-	<tr class="TableTitle">
-		<th>Search Options</th>
-		<th>Item Types</th>
-	</tr>
-	<tr>
-		<td>
-			<input type="checkbox" id="partialNameMatch" onclick='filterCheckboxTick(this)' /> Match name partially
-			<br />
-			<input type="radio" id="searchByDisplayedName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Displayed Name</t>
-			<br />
-			<input type="radio" id="searchByInternalName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Internal Name</t>
-		</td>
-		<td>
-			<input type="checkbox" id="filterGeneric" onclick='filterCheckboxTick(this)' /> Generic items
-			<br />
-			<input type="checkbox" id="filterObjects" onclick='filterCheckboxTick(this)' /> Objects
-			<br />
-			<input type="checkbox" id="filterActiveItems" onclick='filterCheckboxTick(this)' /> Active items
-			<br />
-			<input type="checkbox" id="filterConsumables" onclick='filterCheckboxTick(this)' /> Consumeables
-		</td>
-	</tr>
-	<tr>
-		<td colspan="2">
-			<input type="submit" value="Search" form="searchForm" style="width:100%"/>
-		</td>
-	</tr>
+    <tr class="TableTitle">
+        <th>Search Options</th>
+        <th>Item Types</th>
+    </tr>
+    <tr>
+        <td id="filterCheckboxContainer" />
+        <td>
+            <input type="checkbox" id="partialNameMatch" onclick='filterCheckboxTick(this)' /> Match name partially
+            <br />
+            <input type="radio" id="searchByDisplayedName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Displayed Name</t>
+            <br />
+            <input type="radio" id="searchByInternalName" name="searchBy" onclick='searchByButtonClick(this)' /><t>Internal Name</t>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <input type="submit" value="Search" form="searchForm" style="width:100%" />
+        </td>
+    </tr>
 </table>
 
 @if (Model == null || Model.Count == 0)
 {
-	<div>Nothing to display.</div>
+    <div>Nothing to display.</div>
 }
 else
 {
-	@foreach (var item in Model)
-	{
-		<a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ItemId asp-route-modId=@item.SourceModId>
-			<div class="itemDataContainer">
-				@await Component.InvokeAsync("ItemReference", item)
-			</div>
-		</a>
-	}
+    @foreach (var item in Model)
+    {
+        <a asp-action="Item" asp-controller="Items" asp-route-itemId=@item.ID.ItemId asp-route-modId=@item.ID.SourceModId>
+            <div class="itemDataContainer">
+                @await Component.InvokeAsync("ItemReference", item)
+            </div>
+        </a>
+    }
 }

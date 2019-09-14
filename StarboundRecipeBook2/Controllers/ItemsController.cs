@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StarboundRecipeBook2.Helpers;
 using StarboundRecipeBook2.Services;
+using System;
 
 namespace StarboundRecipeBook2.Controllers
 {
@@ -10,33 +11,21 @@ namespace StarboundRecipeBook2.Controllers
         IItemRepository _itemRepo;
 
         public ItemsController(IItemRepository itemRepo)
-        { _itemRepo = itemRepo; }
+            => _itemRepo = itemRepo;
 
         public IActionResult Index()
         {
             ItemSearchType searchOptions = ItemSearchType.None;
 
-            bool? generic = Request.Cookies["filterGeneric"].ToBool();
-            bool? objects = Request.Cookies["filterObjects"].ToBool();
-            bool? activeItems = Request.Cookies["filterActiveItems"].ToBool();
-            bool? consumables = Request.Cookies["filterConsumables"].ToBool();
+            // Get parameters
+            bool hasItemSearch = HttpContext.Request.Query.TryGetValue("itemSearch", out var itemSearch);
             bool? partialNameMatch = Request.Cookies["partialNameMatch"].ToBool();
             string searchBySelected = Request.Cookies["searchBy"];
 
-            bool hasItemSearch = HttpContext.Request.Query.TryGetValue("itemSearch", out var itemSearch);
-
-            // Add flags based on check boxes
-            if (generic == true)
-                searchOptions |= ItemSearchType.Generic;
-
-            if (objects == true)
-                searchOptions |= ItemSearchType.Object;
-
-            if (activeItems == true)
-                searchOptions |= ItemSearchType.ActiveItem;
-
-            if (consumables == true)
-                searchOptions |= ItemSearchType.Consumable;
+            // Get a list of item search types selected by the user
+            foreach (ItemSearchType option in Enum.GetValues(typeof(ItemSearchType)))
+                if (Request.Cookies[$"filter-{option.ToString()}"].ToBool() == true)
+                    searchOptions |= option;
 
             // No ItemSearchOptions selected
             if (searchOptions == ItemSearchType.None)
@@ -46,22 +35,20 @@ namespace StarboundRecipeBook2.Controllers
             else if (!hasItemSearch || string.IsNullOrWhiteSpace(itemSearch))
                 return View();
 
-            // Not an empty search string
-            else
-            {
-                ViewBag.itemSearch = itemSearch;
+            ViewBag.itemSearch = itemSearch;
+            ItemSearchBy searchBy;
 
-                // Default to displayed name if no option is picked
-                if (searchBySelected == "searchByInternalName")
-                    return View(_itemRepo.GetItemsByInternalName(itemSearch, partialMatch: partialNameMatch.GetValueOrDefault(), searchOptions: searchOptions));
-                else
-                    return View(_itemRepo.GetItemsByShortDescription(itemSearch, partialMatch: partialNameMatch.GetValueOrDefault(), searchOptions: searchOptions));
-            }
+            if (searchBySelected == "searchByInternalName")
+                searchBy = ItemSearchBy.InternalName;
+            else
+                searchBy = ItemSearchBy.ShortDescription;
+
+            return View(_itemRepo.GetItems(itemSearch, partialMatch: partialNameMatch.GetValueOrDefault(), searchBy: searchBy, searchType: searchOptions));
         }
 
-        public IActionResult Item(int modId, int itemId)
+        public IActionResult Item(uint modId, uint itemId)
         {
-            var item = _itemRepo.GetItemByIds(itemId, modId, ItemIncludeOptions.All);
+            var item = _itemRepo.GetItemById(itemId, modId);
             if (item == default)
                 return RedirectToAction("Index", "Home");
             return View(item);

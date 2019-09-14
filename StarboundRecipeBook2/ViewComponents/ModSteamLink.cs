@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
 using StarboundRecipeBook2.Services;
 using System.Threading.Tasks;
 
@@ -9,14 +10,18 @@ namespace StarboundRecipeBook2.ViewComponents
         IModRepository _modRepo;
 
         public ModSteamLinkViewComponent(IModRepository modRepo)
-        { _modRepo = modRepo; }
+            => _modRepo = modRepo;
 
-        public Task<IViewComponentResult> InvokeAsync(int steamID)
+        public Task<IViewComponentResult> InvokeAsync(uint steamID)
         {
+            ViewViewComponentResult view;
+
             if (steamID < 0)
-                return Task.FromResult<IViewComponentResult>(View("BaseAssets"));
+                view = View("BaseAssets");
             else
-                return Task.FromResult<IViewComponentResult>(View("Default", _modRepo.GetModById(steamID)));
+                view = View("Default", _modRepo.GetModById(steamID));
+
+            return Task.FromResult<IViewComponentResult>(view);
         }
     }
 }

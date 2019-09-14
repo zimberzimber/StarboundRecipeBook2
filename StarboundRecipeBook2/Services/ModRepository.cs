@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace StarboundRecipeBook2.Services
 {
-    public interface IModRepository
+    public interface IModRepository : IBaseRepository<Mod>
     {
         /// <summary>
         /// Get a list of all the mods
@@ -25,7 +25,7 @@ namespace StarboundRecipeBook2.Services
 
     public class ModRepository : BaseRepository<Mod>, IModRepository
     {
-        IQueryable<Mod> BaseQuery { get => _db.Mods.AsQueryable(); }
+        public override IQueryable<Mod> BaseQuery => _db.Mods.AsQueryable();
 
         public List<Mod> GetAllMods(int skip = 0, int take = 0)
             => SkipTake(BaseQuery, skip, take).ToList();

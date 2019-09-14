@@ -35,10 +35,10 @@ namespace StarboundRecipeBook2.Services
         Material = 512,
         Liquid = 1024,
         Instrument = 2048,
-        All = 4096
+        All = 4095
     }
 
-    public interface IItemRepository
+    public interface IItemRepository : IBaseRepository<Item>
     {
         /// <summary>
         /// Look for an item by ID
@@ -78,7 +78,7 @@ namespace StarboundRecipeBook2.Services
 
     public class ItemRepository : BaseRepository<Item>, IItemRepository
     {
-        IQueryable<Item> BaseQuery { get => _db.Items.AsQueryable(); }
+        public override IQueryable<Item> BaseQuery => _db.Items.AsQueryable();
 
         public Item GetItemById(uint itemId, uint sourceModId)
             => BaseQuery.FirstOrDefault(i => i.ID.ItemId == itemId && i.ID.SourceModId == sourceModId);

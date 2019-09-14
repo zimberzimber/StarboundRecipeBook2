@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StarboundRecipeBook2.Models;
+using SBRB.Models;
 using System.Threading.Tasks;
 
 namespace StarboundRecipeBook2.ViewComponents

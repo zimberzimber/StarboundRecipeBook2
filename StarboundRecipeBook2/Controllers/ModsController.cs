@@ -8,9 +8,9 @@ namespace StarboundRecipeBook2.Controllers
         IModRepository _modRepo;
 
         public ModsController(IModRepository modRepo)
-        { _modRepo = modRepo; }
+            => _modRepo = modRepo;
 
         public IActionResult Index()
-            => View(_modRepo.GetAllMods(ModIncludeOptions.All));
+            => View(_modRepo.GetAllMods());
     }
 }

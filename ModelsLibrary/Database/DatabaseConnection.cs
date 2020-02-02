@@ -58,20 +58,6 @@ namespace SBRB.Database
             Items = _database.GetCollection<Item>("items");
             Recipes = _database.GetCollection<Recipe>("recipes");
             Currencies = _database.GetCollection<Currency>("currencies");
-
-
-            FilterDefinition<Item> nameFilter = Builders<Item>.Filter.Eq(x => x.InternalName, "Justine Picardie");
-
-
-            Regex regex = new Regex("searching...", RegexOptions.IgnoreCase);
-            FilterDefinition<Item> filter = Builders<Item>.Filter.Regex(q => q.ShortDescription, new BsonRegularExpression(regex));
-            //FilterDefinition<Item> inStockFilter = Builders<Item>.Filter.Eq(x => x.InStock, true);
-            //FilterDefinition<Item> combineFilters = Builders<Item>.Filter.And(nameFilter, inStockFilter);
-
-            var books = Items.Find(filter).ToList();
-
-            //baseQueriable.ToBsonDocument<Item>().Where(b => b.)
-            //Currencies.Find(filter)
         }
 
         /// <summary>

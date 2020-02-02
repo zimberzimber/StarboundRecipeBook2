@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <RootNamespace>SBRB_DatabaseSeeder</RootNamespace>
+    <ApplicationIcon>i.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

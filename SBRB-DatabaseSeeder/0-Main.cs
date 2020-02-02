@@ -31,8 +31,8 @@ namespace SBRB.Seeder
             startTime = DateTime.Now;
 #if DEBUG
             _logger.Log("Debug mode. Setting pre-defined default as target.");
-            //args = new string[] { @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets" };
-            args = new string[] { @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master" };
+            args = new string[] { @"D:\Games\steamapps\common\Starbound\_UnpackedVanillaAssets" };
+            //args = new string[] { @"D:\Games\steamapps\common\Starbound\mods\_FrackinUniverse-master" };
 #endif
             // Ping the database to check whethers there's a connection to it before doing any work
             _logger.Log("Pinging database for connection...");

@@ -4,18 +4,19 @@ const partialNameMatchCookieName = "partialNameMatch"
 
 const filterKeyword = "filter-"
 const filterTypeOptions = {
-    "Generic" : "Generic",
-    "ActiveItem" : "Active Items",
-    "Consumable" : "Consumeables",
+    "ActiveItem": "Active Items",
+    "Armor": "Armors",
+    "Augment": "Augments",
+    "Codex": "Codexes",
+    "Consumable": "Consumeables",
+    "CurrencyItem": "Currencies",
+    "Flashlight": "Flashlights",
+    "Generic": "Generic",
+    "Instrument": "Instruments",
+    "Liquid": "Liquids",
+    "Material": "Materials",
     "Object" : "Objects",
-    "Armor" : "Armors",
-    "Augment" : "Augments",
-    "CurrencyItem" : "Currencies",
     "Tool" : "Tools",
-    "Flashlight" : "Flashlights",
-    "Material" : "Materials",
-    "Liquid" : "Liquids",
-    "Instrument" : "Instruments"
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -56,7 +57,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let partialNameMatch = getCookie(partialNameMatchCookieName)
     let partialNameMatchElement = document.getElementById("partialNameMatch")
-    partialNameMatchElement.checked = partialNameMatch === "true"
+
+    if (partialNameMatch === "") {
+        partialNameMatch = "true"
+        partialNameMatchElement.checked = true
+    } else {
+        partialNameMatchElement.checked = partialNameMatch === "true"
+    }
 });
 
 function getCookie(cname) {

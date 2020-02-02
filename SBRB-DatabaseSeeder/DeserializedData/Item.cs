@@ -21,7 +21,7 @@ namespace SBRB.Seeder.DeserializedData
         public string description;
         public string rarity = "common";
         public string category;
-        public uint? price;
+        public uint price = 0;
         public uint? maxStack;
         public string tooltipKind;
         public dynamic inventoryIcon;
@@ -172,7 +172,18 @@ namespace SBRB.Seeder.DeserializedData
     }
 
     class DeserializedInstrument : DeserializedItem
-    {
+    { }
 
+    class DeserializedCodex : DeserializedItem
+    {
+        public string id { get => itemName; set => itemName = value; }
+        public string title { get => shortdescription; set => shortdescription = value; }
+        public CodexItemConfig itemConfig;
+    }
+
+    class CodexItemConfig
+    {
+        public string rarity;
+        public uint? price;
     }
 }

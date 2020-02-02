@@ -7,7 +7,8 @@ namespace SBRB.Seeder.Extensions
         // Used to remove comments from the files as JSON de/serializers do not inherently support commenting
         // Single line comment regex:		[/]+[/](.*?)[\n]
         // Multi-line comment regex:		[/]+[*](.*?)[*]+[/]
-        const string UNCOMMENT_REGEX_PATTERN = @"([/]+[/](.*?)[\n])|([/]+[*](.*?)[*]+[/])";
+        // TEMPORARY FIX TO LINKS:          ://
+        const string UNCOMMENT_REGEX_PATTERN = @"([/]+[/](.*?)[\n])|([/]+[*](.*?)[*]+[/])|://";
 
         /// <summary>Uncomment the subject JSON string</summary>
         /// <param name="json">Subject JSON string to uncomment</param>

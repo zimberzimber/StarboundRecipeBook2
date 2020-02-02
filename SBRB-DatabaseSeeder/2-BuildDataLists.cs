@@ -100,6 +100,9 @@ namespace SBRB.Seeder
                 case ".instrument":
                     item = JSON.Deserialize<DeserializedInstrument>(json);
                     break;
+                case ".codex":
+                    item = JSON.Deserialize<DeserializedCodex>(json);
+                    break;
 
 
                 // Armors

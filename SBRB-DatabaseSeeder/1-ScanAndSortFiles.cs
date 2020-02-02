@@ -16,7 +16,7 @@ namespace SBRB.Seeder
             ".back", ".consumable", ".beamaxe", ".flashlight", ".miningtool",
             ".harvestingtool", ".painttool", ".wiretool", ".inspectiontool",
             ".tillingtool", ".augment", ".currency", ".instrument", ".liquid",
-            ".matitem", ".throwitem" };
+            ".matitem", ".throwitem", ".codex" };
 
         // String telling the program which extension is to be considered as a recipe
         const string RECIPE_FILE_EXTENSION = ".recipe";

@@ -29,7 +29,7 @@ namespace StarboundRecipeBook2.Services
         public override IQueryable<Mod> BaseQuery => _db.Mods.AsQueryable();
 
         public List<Mod> GetAllMods(int skip, int take)
-            => SkipTake(BaseQuery, skip, take).ToList();
+            => SkipTake(BaseQuery, skip, take).OrderBy(m => m.FriendlyName).ToList();
 
         public Mod GetModById(uint steamId)
             => BaseQuery.FirstOrDefault(m => m.SteamId == steamId);

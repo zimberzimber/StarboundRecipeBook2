@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson;
+using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using SBRB.Models;
 using System.Collections.Generic;
@@ -31,6 +32,12 @@ namespace StarboundRecipeBook2.Services
             => BaseQuery.Where(r => r.OutputItemName == internalItemName).ToList();
 
         public List<Recipe> GetRecipesCraftedWithItem(string internalItemName)
-            => BaseQuery.Where(r => r.Inputs.FirstOrDefault(i => i.ItemName == internalItemName) != null).ToList();
+        //=> BaseQuery.Where(r => r.Inputs.FirstOrDefault(i => i.ItemName == internalItemName) != null).ToList();
+        {
+
+            var filter = Builders<Recipe>.Filter.Eq("Inputs.ItemName", internalItemName);
+            var gg = _db.Recipes.Find(filter).ToList();
+            return gg;
+        }
     }
 }

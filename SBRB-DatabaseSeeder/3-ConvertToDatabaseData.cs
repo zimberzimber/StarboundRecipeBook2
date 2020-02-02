@@ -197,6 +197,15 @@ namespace SBRB.Seeder
                 {
                     item.ItemType = ItemTypes.Instrument;
                 }
+                else if (dItem is DeserializedCodex dCodex)
+                {
+                    item.ItemType = ItemTypes.Codex;
+                    if (dCodex.itemConfig != null)
+                    {
+                        item.Rarity = (Rarities)Enum.Parse(typeof(Rarities), dCodex.itemConfig.rarity.ToLower());
+                        item.Price = dCodex.itemConfig.price;
+                    }
+                }
             }
 
             // Enqueue the recipe, to be added into the database later
@@ -224,7 +233,7 @@ namespace SBRB.Seeder
             }
 
             // Set the data
-            recipe.FilePath = dRecipe.filePath;
+            recipe.FilePath = dRecipe.filePath.TrimPath(modPath);
             recipe.OutputCount = dRecipe.output.count;
             recipe.OutputItemName = dRecipe.output.item;
             recipe.RecipeGroups = dRecipe.groups;
